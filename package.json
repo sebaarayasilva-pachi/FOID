@@ -1,0 +1,35 @@
+{
+  "name": "foid",
+  "version": "0.1.0",
+  "private": true,
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
+  },
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "seed": "npx tsx scripts/seed-sample.ts",
+    "build": "next build",
+    "start": "next start -p 8080",
+    "lint": "next lint",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "highcharts": "^12.5.0",
+    "highcharts-react-official": "^3.2.3",
+    "next": "14.2.18",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10",
+    "postcss": "^8",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^3",
+    "tsx": "^4",
+    "typescript": "^5"
+  }
+}

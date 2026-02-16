@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Investment {
+  id              String             @id @default(cuid())
+  tenantId        String
+
+  @@index([tenantId])
+  agf             String?   // Administradora de Fondos (LarrainVial, Capital, etc.)
+  name            String    // nombre producto
+  category        String    // FFMM | ACCIONES | RENTA_FIJA | INMOBILIARIO | OTROS
+  capitalInvested Decimal   // monto apertura inicial
+  fechaApertura   DateTime? // fecha de apertura
+  currentValue    Decimal?
+  fechaValor      DateTime? // fecha del valor actual (cotización del día)
+  returnPct       Decimal?
+  monthlyIncome   Decimal?
+  rescates        Decimal?
+  units           Decimal?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  movements       InvestmentMovement[]
+}
+
+model InvestmentMovement {
+  id           String     @id @default(cuid())
+  investmentId String
+  investment   Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+
+  tipo   String   // RESCATE | INGRESO | VALOR_DIA (UT/pérdida)
+  monto  Decimal
+  fecha  DateTime
+  createdAt DateTime @default(now())
+
+  @@index([investmentId])
+}
+
+model Liability {
+  id             String            @id @default(cuid())
+  tenantId       String
+
+  @@index([tenantId])
+  name           String
+  category       String  // SUELDOS | TENEDOR | SANTANDER | HIPOTECARIO | OTRO
+  balance        Decimal?
+  monthlyPayment Decimal
+  interestRate   Decimal?  // 0.089 = 8.9%
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+model CashflowMonth {
+  id       String   @id @default(cuid())
+  tenantId String
+
+  @@index([tenantId])
+  month    String   // YYYY-MM
+  income   Decimal
+  expenses Decimal
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, month])
+}
+
+model Rental {
+  id           String       @id @default(cuid())
+  tenantId     String
+
+  @@index([tenantId])
+  propertyName String
+  monthlyRent  Decimal
+  status       String  // RENTED | VACANT
+  tenantName   String?      // nombre del arrendatario
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}

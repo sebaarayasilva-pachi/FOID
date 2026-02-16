@@ -1,0 +1,5 @@
+// Para producción (Cloud SQL): copiar a schema.prisma y cambiar datasource
+// provider = "postgresql"
+// url      = env("DATABASE_URL")
+// Los enums se restauran: InvestmentCategory, LiabilityCategory, RentalStatus
+// Y los campos Decimal usan @db.Decimal(18, 2) etc.

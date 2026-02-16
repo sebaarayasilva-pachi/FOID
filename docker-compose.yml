@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: foid
+      POSTGRES_PASSWORD: foid
+      POSTGRES_DB: foid
+    volumes:
+      - foid_pg_data:/var/lib/postgresql/data
+
+volumes:
+  foid_pg_data:
