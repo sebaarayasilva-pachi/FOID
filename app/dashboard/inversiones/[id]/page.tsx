@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { InvestmentDetailClient } from './InvestmentDetailClient';
 
+export const dynamic = 'force-dynamic';
+
 const TENANT_ID = process.env.FOID_TENANT_ID || 'g3';
 
 export default async function InvestmentDetailPage({ params }: { params: Promise<{ id: string }> }) {

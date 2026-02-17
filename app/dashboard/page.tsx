@@ -1,4 +1,6 @@
 import { getOverview } from '@/src/services/overview.service';
+
+export const dynamic = 'force-dynamic';
 import { DashboardClient } from './DashboardClient';
 
 export default async function DashboardPage() {

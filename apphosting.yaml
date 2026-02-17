@@ -1,0 +1,25 @@
+# Firebase App Hosting - FOID
+# https://firebase.google.com/docs/app-hosting/configure
+# Base de datos: Cloud SQL (PostgreSQL) - ver DEPLOY.md
+
+runConfig:
+  minInstances: 0
+  maxInstances: 10
+  concurrency: 80
+  memoryMiB: 512
+
+# Variables de entorno
+# DATABASE_URL: formato postgresql://USER:PASS@/DB?host=/cloudsql/PROJECT:REGION:INSTANCE
+# Configurar con: firebase apphosting:secrets:set DATABASE_URL
+env:
+  - variable: FOID_TENANT_ID
+    value: "g3"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: DATABASE_URL
+    secret: DATABASE_URL
+    availability:
+      - BUILD
+      - RUNTIME

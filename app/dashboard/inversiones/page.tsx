@@ -1,6 +1,8 @@
 import { prisma } from '@/src/lib/prisma';
 import { InversionesClient } from './InversionesClient';
 
+export const dynamic = 'force-dynamic';
+
 const TENANT_ID = process.env.FOID_TENANT_ID || 'g3';
 
 export default async function InversionesPage() {

@@ -2,6 +2,8 @@ import { prisma } from '@/src/lib/prisma';
 import Link from 'next/link';
 import { ArriendosClient } from './ArriendosClient';
 
+export const dynamic = 'force-dynamic';
+
 const TENANT_ID = process.env.FOID_TENANT_ID || 'g3';
 
 export default async function ArriendosPage() {
