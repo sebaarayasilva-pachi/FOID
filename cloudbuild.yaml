@@ -36,7 +36,7 @@ steps:
       - '--set-secrets'
       - 'DATABASE_URL=DATABASE_URL:latest'
       - '--set-env-vars'
-      - 'FOID_TENANT_ID=g3'
+      - 'FOID_TENANT_ID=g3,PGHOST=/cloudsql/foid-487623:southamerica-west1:foid-db'
     id: 'deploy'
     waitFor: ['push']
 

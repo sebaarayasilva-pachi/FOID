@@ -56,18 +56,13 @@ gcloud artifacts repositories create cloud-run-source-deploy \
 
 ### Crear secreto DATABASE_URL en Secret Manager
 
-**Formato para Prisma + Cloud SQL (Unix socket):**
-- `localhost` es obligatorio (Prisma lo ignora pero lo requiere)
+**Formato para Cloud SQL (adapter pg + PGHOST):**
+- `DATABASE_URL` simple: `postgresql://user:pass@localhost:5432/foid`
+- `PGHOST` en Cloud Run: `/cloudsql/PROJECT:REGION:INSTANCE` (ya en cloudbuild.yaml)
 - `$` en contraseña → `%24`
-- Si falla "empty host", probar con `host` codificado: `%2F` = `/`, `%3A` = `:`
 
 ```powershell
-# Opción 1 - host con colons codificados:
-[System.IO.File]::WriteAllText("$env:TEMP\db.txt", 'postgresql://foid_user:Charli01%24@localhost:5432/foid?host=/cloudsql/foid-487623%3Asouthamerica-west1%3Afoid-db')
-gcloud secrets versions add DATABASE_URL --data-file="$env:TEMP\db.txt" --project=foid-5e5e8
-
-# Opción 2 - host totalmente codificado (si opción 1 falla):
-[System.IO.File]::WriteAllText("$env:TEMP\db.txt", 'postgresql://foid_user:Charli01%24@localhost:5432/foid?host=%2Fcloudsql%2Ffoid-487623%3Asouthamerica-west1%3Afoid-db')
+[System.IO.File]::WriteAllText("$env:TEMP\db.txt", 'postgresql://foid_user:Charli01%24@localhost:5432/foid')
 gcloud secrets versions add DATABASE_URL --data-file="$env:TEMP\db.txt" --project=foid-5e5e8
 ```
 
