@@ -56,9 +56,9 @@ gcloud artifacts repositories create cloud-run-source-deploy \
 
 ### Crear secreto DATABASE_URL en Secret Manager
 
-**Formato para Cloud SQL (adapter pg + PGHOST):**
-- `DATABASE_URL` simple: `postgresql://user:pass@localhost:5432/foid`
-- `PGHOST` en Cloud Run: `/cloudsql/PROJECT:REGION:INSTANCE` (ya en cloudbuild.yaml)
+**Formato para Cloud SQL Auth Proxy (TCP localhost:5432):**
+- `DATABASE_URL`: `postgresql://user:pass@localhost:5432/foid`
+- El contenedor usa Cloud SQL Auth Proxy que expone la DB en localhost:5432
 - `$` en contraseña → `%24`
 
 ```powershell

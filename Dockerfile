@@ -21,12 +21,23 @@ RUN npm run build
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+
+# Cloud SQL Auth Proxy - expone TCP en localhost:5432
+ARG CLOUD_SQL_PROXY_VERSION=2.21.0
+RUN wget -q https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v${CLOUD_SQL_PROXY_VERSION}/cloud-sql-proxy.linux.amd64 -O /usr/local/bin/cloud-sql-proxy \
+  && chmod +x /usr/local/bin/cloud-sql-proxy
+
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 
+# Script: inicia proxy en background, luego app
+COPY scripts/start-with-proxy.sh ./
+RUN chmod +x start-with-proxy.sh
+
 EXPOSE 8080
 ENV PORT=8080
-CMD ["npm", "run", "start"]
+ENV CLOUD_SQL_INSTANCE=foid-487623:southamerica-west1:foid-db
+CMD ["./start-with-proxy.sh"]
