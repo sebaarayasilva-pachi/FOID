@@ -10,6 +10,10 @@ export default async function DashboardPage() {
     data = await getOverview(tenantId);
   } catch (e) {
     console.error('Overview error:', e);
+    // Log detallado para Cloud Run Logging
+    if (e instanceof Error) {
+      console.error('Error name:', e.name, 'Message:', e.message);
+    }
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-red-400">Error al cargar datos. Verifica la conexión a la base de datos.</p>

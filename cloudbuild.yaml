@@ -1,0 +1,48 @@
+# Cloud Build - Deploy FOID a Cloud Run con Cloud SQL
+# Proyecto: foid-5e5e8 | Cloud SQL: foid-487623:southamerica-west1:foid-db
+
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-east5-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/foid-web:latest'
+      - '.'
+    id: 'build'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-east5-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/foid-web:latest'
+    id: 'push'
+    waitFor: ['build']
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '--quiet'
+      - 'foid-web'
+      - '--image'
+      - 'us-east5-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/foid-web:latest'
+      - '--region'
+      - 'us-east5'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--add-cloudsql-instances'
+      - 'foid-487623:southamerica-west1:foid-db'
+      - '--set-secrets'
+      - 'DATABASE_URL=DATABASE_URL:latest'
+      - '--set-env-vars'
+      - 'FOID_TENANT_ID=g3'
+    id: 'deploy'
+    waitFor: ['push']
+
+images:
+  - 'us-east5-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/foid-web:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'  # 8 vCPU, más memoria para Next.js build
