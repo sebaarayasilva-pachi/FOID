@@ -14,18 +14,15 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^5.22.0",
     "highcharts": "^12.5.0",
     "highcharts-react-official": "^3.2.3",
     "next": "14.2.18",
-    "pg": "^8.18.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/pg": "^8.16.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10",
