@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { addMovement, updateCurrentValue, updateMovement, deleteMovement } from '../actions';
+import { addMovement, updateCurrentValue, updateMovement, deleteMovement, updateInvestmentApertura } from '../actions';
 
 type Investment = {
   id: string;
@@ -41,7 +41,7 @@ export function InvestmentDetailClient({ investment: initialInvestment }: { inve
   }, [initialInvestment]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'ingreso' | 'valor' | 'rescate' | null>(null);
+  const [activeTab, setActiveTab] = useState<'ingreso' | 'valor' | 'rescate' | 'apertura' | null>(null);
   const [editingMovementId, setEditingMovementId] = useState<string | null>(null);
 
   const valorMostrar = investment.currentValue ?? investment.saldoCalculado;
@@ -112,6 +112,27 @@ export function InvestmentDetailClient({ investment: initialInvestment }: { inve
     setLoading(false);
   }
 
+  async function handleUpdateApertura(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
+    const form = e.currentTarget;
+    const capitalInvested = parseFloat((form.elements.namedItem('capitalInvested') as HTMLInputElement).value);
+    const fechaApertura = (form.elements.namedItem('fechaApertura') as HTMLInputElement).value;
+    const result = await updateInvestmentApertura(investment.id, capitalInvested, fechaApertura);
+    setMessage(result.ok ? { ok: true, text: 'Apertura actualizada' } : { ok: false, text: result.error ?? 'Error' });
+    if (result.ok) {
+      setInvestment((prev) => ({
+        ...prev,
+        capitalInvested,
+        fechaApertura: fechaApertura ? `${fechaApertura}T12:00:00.000Z` : null,
+      }));
+      setActiveTab(null);
+      router.refresh();
+    }
+    setLoading(false);
+  }
+
   return (
     <div className="space-y-6">
       {/* Cabecera */}
@@ -120,9 +141,18 @@ export function InvestmentDetailClient({ investment: initialInvestment }: { inve
         <p className="text-slate-400 text-sm mt-1">
           {investment.agf ?? '—'} · {investment.category}
         </p>
-        <p className="text-slate-500 text-xs mt-1">
-          Apertura: {formatDate(investment.fechaApertura ?? new Date().toISOString())} · {formatCurrency(investment.capitalInvested)}
-        </p>
+        <div className="flex items-center gap-2 mt-1">
+          <p className="text-slate-500 text-xs">
+            Apertura: {formatDate(investment.fechaApertura ?? new Date().toISOString())} · {formatCurrency(investment.capitalInvested)}
+          </p>
+          <button
+            type="button"
+            onClick={() => setActiveTab(activeTab === 'apertura' ? null : 'apertura')}
+            className="text-xs text-sky-400 hover:text-sky-300"
+          >
+            {activeTab === 'apertura' ? 'Cancelar' : 'Editar'}
+          </button>
+        </div>
         <p className="text-xl font-semibold text-sky-400 mt-4">
           Valor actual: {formatCurrency(valorMostrar)}
           {investment.fechaValor && (
@@ -141,6 +171,51 @@ export function InvestmentDetailClient({ investment: initialInvestment }: { inve
                 : `Pérdida: ${formatCurrency(investment.currentValue - investment.saldoCalculado)}`}
             </span>
           </p>
+        )}
+        {activeTab === 'apertura' && (
+          <form onSubmit={handleUpdateApertura} className="mt-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700 space-y-3">
+            <h4 className="text-sm font-medium text-slate-200">Modificar apertura</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Monto apertura (CLP)</label>
+                <input
+                  type="number"
+                  name="capitalInvested"
+                  required
+                  min={0}
+                  step={1}
+                  defaultValue={investment.capitalInvested}
+                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Fecha apertura</label>
+                <input
+                  type="date"
+                  name="fechaApertura"
+                  required
+                  defaultValue={investment.fechaApertura ? investment.fechaApertura.slice(0, 10) : new Date().toISOString().slice(0, 10)}
+                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-3 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium"
+              >
+                Guardar cambios
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab(null)}
+                className="px-3 py-2 bg-slate-600 hover:bg-slate-500 text-slate-200 rounded-lg text-sm"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
         )}
       </div>
 

@@ -142,6 +142,30 @@ export async function deleteMovement(movementId: string) {
   }
 }
 
+export async function updateInvestmentApertura(
+  investmentId: string,
+  capitalInvested: number,
+  fechaApertura: string
+) {
+  try {
+    const d = parseDate(fechaApertura);
+    if (!d) {
+      return { ok: false as const, error: 'Fecha de apertura inválida' };
+    }
+    if (capitalInvested < 0) {
+      return { ok: false as const, error: 'El monto debe ser mayor o igual a 0' };
+    }
+    await prisma.investment.update({
+      where: { id: investmentId },
+      data: { capitalInvested, fechaApertura: d },
+    });
+    return { ok: true as const };
+  } catch (e) {
+    console.error('Update apertura error:', e);
+    return { ok: false as const, error: 'Error al actualizar apertura' };
+  }
+}
+
 export async function updateCurrentValue(investmentId: string, currentValue: number, fechaValor: string) {
   try {
     const d = parseDate(fechaValor);
