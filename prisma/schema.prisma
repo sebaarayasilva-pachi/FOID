@@ -95,3 +95,15 @@ model OtherIncome {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model BankBalance {
+  id        String   @id @default(cuid())
+  tenantId  String
+  date      String   // YYYY-MM-DD
+  balance   Decimal
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, date])
+  @@index([tenantId])
+}

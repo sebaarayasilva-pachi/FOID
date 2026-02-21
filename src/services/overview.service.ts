@@ -7,7 +7,7 @@ function toNum(d: Decimal | number | null | undefined): number {
 }
 
 export async function getOverview(tenantId: string) {
-  const [investments, liabilities, rentals, cashflowMonths, otherIncomes] = await Promise.all([
+  const [investments, liabilities, rentals, cashflowMonths, otherIncomes, bankBalances] = await Promise.all([
     prisma.investment.findMany({
       where: { tenantId },
       include: { movements: { orderBy: { fecha: 'asc' } } },
@@ -19,6 +19,10 @@ export async function getOverview(tenantId: string) {
       orderBy: { month: 'asc' },
     }),
     prisma.otherIncome.findMany({ where: { tenantId } }),
+    prisma.bankBalance.findMany({
+      where: { tenantId },
+      orderBy: { date: 'asc' },
+    }),
   ]);
 
   // Otros ingresos: monto mensual equivalente (se suma al flujo de caja)
@@ -38,6 +42,7 @@ export async function getOverview(tenantId: string) {
     0
   );
   const totalLiabilities = liabilities.reduce((sum, l) => sum + toNum(l.balance), 0);
+  const latestBankBalance = bankBalances.length > 0 ? toNum(bankBalances[bankBalances.length - 1].balance) : 0;
   const monthlyRentIncome = rentals
     .filter((r) => (r.status ?? '').toUpperCase() === 'RENTED')
     .reduce((sum, r) => sum + toNum(r.monthlyRent), 0);
@@ -154,6 +159,17 @@ export async function getOverview(tenantId: string) {
 
   // Extender series con 1 solo punto hasta la fecha más reciente para que todas las líneas sean visibles
   const maxTime = Math.max(...rawSeries.flatMap((s) => s.data.map((p) => p[0])), now.getTime());
+  // Serie Banco: saldo diario
+  const bankSeriesData: [number, number][] = bankBalances.map((b) => {
+    const [y, m, d] = b.date.split('-').map(Number);
+    const ts = new Date(y, (m ?? 1) - 1, d ?? 1).getTime();
+    return [ts, toNum(b.balance)];
+  });
+  const bankTrendDaily =
+    bankSeriesData.length > 0
+      ? [{ name: 'Banco', data: bankSeriesData, color: '#22c55e' }]
+      : [];
+
   const investmentTrendDaily = rawSeries.map((s) => {
     const data = [...s.data];
     if (data.length === 1 && data[0][0] < maxTime) {
@@ -250,6 +266,7 @@ export async function getOverview(tenantId: string) {
     kpis: {
       totalInvestments,
       totalLiabilities,
+      latestBankBalance,
       monthlyRentIncome,
       monthlyIncome,
       monthlyExpenses,
@@ -265,6 +282,7 @@ export async function getOverview(tenantId: string) {
       investmentReturns,
       investmentTrend,
       investmentTrendDaily,
+      bankTrendDaily,
       liabilitiesBreakdown,
       cashflowTrend,
       rentals: rentalsList,

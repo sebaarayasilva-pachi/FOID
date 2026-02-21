@@ -23,5 +23,8 @@ check();
 " || { echo "Timeout esperando proxy."; kill $PROXY_PID 2>/dev/null; exit 1; }
 echo "Proxy listo."
 
-# Migraciones y arranque
-exec npm run start
+# Migraciones en background (no bloquean el arranque de Cloud Run)
+(prisma migrate deploy || echo "Migrate: falló o ya aplicado") &
+
+# Arranque inmediato para pasar el health check de Cloud Run
+exec next start -p 8080

@@ -26,9 +26,13 @@ FROM node:20-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# OpenSSL para Prisma
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
+# OpenSSL y Cloud SQL Proxy
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates wget \
   && rm -rf /var/lib/apt/lists/*
+
+ARG CLOUD_SQL_PROXY_VERSION=2.21.0
+RUN wget -q https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v${CLOUD_SQL_PROXY_VERSION}/cloud-sql-proxy.linux.amd64 -O /usr/local/bin/cloud-sql-proxy \
+  && chmod +x /usr/local/bin/cloud-sql-proxy
 
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
@@ -36,6 +40,11 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 
+COPY scripts/start-with-proxy.sh ./
+RUN tr -d '\r' < start-with-proxy.sh > start-with-proxy.fix && mv start-with-proxy.fix start-with-proxy.sh \
+  && chmod +x start-with-proxy.sh
+
 EXPOSE 8080
 ENV PORT=8080
-CMD ["npm", "run", "start"]
+ENV CLOUD_SQL_INSTANCE=foid-487623:southamerica-west1:foid-db
+CMD ["sh", "./start-with-proxy.sh"]

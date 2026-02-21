@@ -68,6 +68,18 @@ export default async function InvestmentDetailPage({ params }: { params: Promise
             Inversiones
           </Link>
           <Link
+            href="/dashboard/ingresos"
+            className="block px-3 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+          >
+            Ingresos
+          </Link>
+          <Link
+            href="/dashboard/banco"
+            className="block px-3 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+          >
+            Banco
+          </Link>
+          <Link
             href="/dashboard/arriendos"
             className="block px-3 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200"
           >

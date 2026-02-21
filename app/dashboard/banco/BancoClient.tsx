@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { saveRental, deleteRental } from './actions';
+import { saveBankBalance, deleteBankBalance } from './actions';
 
 const MENU_ITEMS = [
   { id: 'overview', label: 'Overview', href: '/dashboard' },
@@ -15,12 +15,10 @@ const MENU_ITEMS = [
   { id: 'arriendos', label: 'Arriendos', href: '/dashboard/arriendos' },
 ];
 
-type Rental = {
+type BankBalanceEntry = {
   id: string;
-  propertyName: string;
-  monthlyRent: number;
-  status: string;
-  tenantName: string;
+  date: string;
+  balance: number;
 };
 
 function formatCurrency(n: number) {
@@ -32,12 +30,21 @@ function formatCurrency(n: number) {
   }).format(n);
 }
 
-export function ArriendosClient({ rentals: initialRentals }: { rentals: Rental[] }) {
+function formatDate(d: string) {
+  const [y, m, day] = d.split('-');
+  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const mi = parseInt(m ?? '1', 10) - 1;
+  return `${day ?? ''} ${months[mi >= 0 && mi < 12 ? mi : 0]} ${y}`;
+}
+
+export function BancoClient({ balances: initialBalances }: { balances: BankBalanceEntry[] }) {
   const router = useRouter();
-  const [rentals, setRentals] = useState(initialRentals);
-  const [editing, setEditing] = useState<Rental | null>(null);
+  const [balances, setBalances] = useState(initialBalances);
+  const [editing, setEditing] = useState<BankBalanceEntry | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const today = new Date().toISOString().slice(0, 10);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -45,20 +52,23 @@ export function ArriendosClient({ rentals: initialRentals }: { rentals: Rental[]
     setMessage(null);
     const form = e.currentTarget;
     const formData = new FormData(form);
-    const result = await saveRental(formData);
+    const result = await saveBankBalance(formData);
     setMessage(result.ok ? { ok: true, text: 'Guardado correctamente' } : { ok: false, text: result.error ?? 'Error' });
     if (result.ok && 'id' in result) {
       setEditing(null);
       const formId = formData.get('id') as string | null;
-      const propertyName = (formData.get('propertyName') as string)?.trim() ?? '';
-      const monthlyRent = parseFloat((formData.get('monthlyRent') as string) || '0');
-      const status = (formData.get('status') as string) || 'VACANT';
-      const tenantName = (formData.get('tenantName') as string)?.trim() ?? '';
-      const newRental: Rental = { id: result.id, propertyName, monthlyRent, status, tenantName };
+      const date = (formData.get('date') as string)?.slice(0, 10) ?? '';
+      const balance = parseFloat((formData.get('balance') as string) || '0');
+      const newEntry: BankBalanceEntry = { id: result.id, date, balance };
       if (formId) {
-        setRentals((prev) => prev.map((r) => (r.id === formId ? newRental : r)));
+        setBalances((prev) => prev.map((b) => (b.id === formId ? newEntry : b)).sort((a, b) => b.date.localeCompare(a.date)));
       } else {
-        setRentals((prev) => [...prev, newRental].sort((a, b) => a.propertyName.localeCompare(b.propertyName)));
+        const existing = balances.find((b) => b.date === date);
+        if (existing) {
+          setBalances((prev) => prev.map((b) => (b.id === existing.id ? newEntry : b)).sort((a, b) => b.date.localeCompare(a.date)));
+        } else {
+          setBalances((prev) => [...prev, newEntry].sort((a, b) => b.date.localeCompare(a.date)));
+        }
       }
       form.reset();
       router.refresh();
@@ -67,18 +77,18 @@ export function ArriendosClient({ rentals: initialRentals }: { rentals: Rental[]
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('¿Eliminar esta propiedad?')) return;
+    if (!confirm('¿Eliminar este registro de saldo?')) return;
     setLoading(true);
-    const result = await deleteRental(id);
+    const result = await deleteBankBalance(id);
     if (result.ok) {
-      setRentals((prev) => prev.filter((r) => r.id !== id));
+      setBalances((prev) => prev.filter((b) => b.id !== id));
       setEditing(null);
     }
     setMessage(result.ok ? { ok: true, text: 'Eliminado' } : { ok: false, text: result.error ?? 'Error' });
     setLoading(false);
   }
 
-  const totalRent = rentals.filter((r) => r.status === 'RENTED').reduce((s, r) => s + r.monthlyRent, 0);
+  const latestBalance = balances.length > 0 ? balances[0] : null;
 
   return (
     <div className="flex min-h-screen bg-slate-950">
@@ -90,7 +100,7 @@ export function ArriendosClient({ rentals: initialRentals }: { rentals: Rental[]
               key={item.id}
               href={item.href}
               className={`block px-3 py-2 rounded-lg text-sm ${
-                item.id === 'arriendos' ? 'bg-sky-500/20 text-sky-400' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                item.id === 'banco' ? 'bg-sky-500/20 text-sky-400' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
               }`}
             >
               {item.label}
@@ -102,15 +112,14 @@ export function ArriendosClient({ rentals: initialRentals }: { rentals: Rental[]
       <main className="flex-1 p-8 overflow-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-slate-100">Arriendos</h1>
+            <h1 className="text-2xl font-bold text-slate-100">Banco</h1>
             <p className="text-slate-400 text-sm mt-1">
-              Ingreso total: {formatCurrency(totalRent)} / mes
+              {latestBalance
+                ? `Saldo más reciente (${formatDate(latestBalance.date)}): ${formatCurrency(latestBalance.balance)}`
+                : 'Registra el saldo diario de tu cuenta corriente'}
             </p>
           </div>
-          <Link
-            href="/dashboard"
-            className="text-sm text-slate-400 hover:text-slate-200"
-          >
+          <Link href="/dashboard" className="text-sm text-slate-400 hover:text-slate-200">
             ← Volver al dashboard
           </Link>
         </div>
@@ -126,43 +135,32 @@ export function ArriendosClient({ rentals: initialRentals }: { rentals: Rental[]
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Lista de propiedades */}
           <div className="bg-slate-900/60 rounded-xl border border-slate-800 p-6">
-            <h2 className="text-sm font-semibold text-slate-200 mb-4">Propiedades</h2>
+            <h2 className="text-sm font-semibold text-slate-200 mb-4">Historial de saldos</h2>
             <div className="space-y-3">
-              {rentals.length === 0 ? (
-                <p className="text-slate-500 text-sm">No hay propiedades. Agrega una con el formulario.</p>
+              {balances.length === 0 ? (
+                <p className="text-slate-500 text-sm">No hay registros. Agrega un saldo con el formulario.</p>
               ) : (
-                rentals.map((r) => (
+                balances.map((b) => (
                   <div
-                    key={r.id}
+                    key={b.id}
                     className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700/50"
                   >
                     <div>
-                      <p className="font-medium text-slate-200">{r.propertyName}</p>
-                      <p className="text-sm text-slate-400">
-                        {formatCurrency(r.monthlyRent)} / mes
-                        {r.tenantName && ` · ${r.tenantName}`}
-                      </p>
-                      <span
-                        className={`inline-block mt-1 px-2 py-0.5 rounded text-xs ${
-                          r.status === 'RENTED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'
-                        }`}
-                      >
-                        {r.status === 'RENTED' ? 'Arrendado' : 'Vacante'}
-                      </span>
+                      <p className="font-medium text-slate-200">{formatDate(b.date)}</p>
+                      <p className="text-sm text-emerald-400">{formatCurrency(b.balance)}</p>
                     </div>
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={() => setEditing(r)}
+                        onClick={() => setEditing(b)}
                         className="px-3 py-1.5 text-xs bg-slate-600 hover:bg-slate-500 text-slate-200 rounded"
                       >
                         Editar
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDelete(r.id)}
+                        onClick={() => handleDelete(b.id)}
                         disabled={loading}
                         className="px-3 py-1.5 text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded disabled:opacity-50"
                       >
@@ -175,56 +173,32 @@ export function ArriendosClient({ rentals: initialRentals }: { rentals: Rental[]
             </div>
           </div>
 
-          {/* Formulario agregar / modificar */}
           <div className="bg-slate-900/60 rounded-xl border border-slate-800 p-6">
             <h2 className="text-sm font-semibold text-slate-200 mb-4">
-              {editing ? 'Modificar propiedad' : 'Agregar propiedad'}
+              {editing ? 'Modificar saldo' : 'Registrar saldo diario'}
             </h2>
             <form key={editing?.id ?? 'new'} onSubmit={handleSubmit} className="space-y-4">
               <input type="hidden" name="id" value={editing?.id ?? ''} />
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Nombre de la propiedad</label>
+                <label className="block text-xs text-slate-400 mb-1">Fecha</label>
                 <input
-                  type="text"
-                  name="propertyName"
+                  type="date"
+                  name="date"
                   required
-                  defaultValue={editing?.propertyName}
+                  defaultValue={editing?.date ?? today}
                   className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  placeholder="Ej: Depto Las Condes"
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Arriendo mensual (CLP)</label>
+                <label className="block text-xs text-slate-400 mb-1">Saldo (CLP)</label>
                 <input
                   type="number"
-                  name="monthlyRent"
-                  min={0}
+                  name="balance"
                   step={1000}
-                  defaultValue={editing?.monthlyRent ?? ''}
+                  defaultValue={editing?.balance ?? ''}
                   className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  placeholder="450000"
+                  placeholder="Ej: 2500000"
                 />
-              </div>
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">Nombre del arrendatario</label>
-                <input
-                  type="text"
-                  name="tenantName"
-                  defaultValue={editing?.tenantName ?? ''}
-                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  placeholder="Ej: Juan Pérez"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">Estado</label>
-                <select
-                  name="status"
-                  defaultValue={editing?.status ?? 'VACANT'}
-                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                >
-                  <option value="RENTED">Arrendado</option>
-                  <option value="VACANT">Vacante</option>
-                </select>
               </div>
               <div className="flex gap-2 pt-2">
                 <button
@@ -232,7 +206,7 @@ export function ArriendosClient({ rentals: initialRentals }: { rentals: Rental[]
                   disabled={loading}
                   className="px-4 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium"
                 >
-                  {loading ? 'Guardando...' : editing ? 'Guardar cambios' : 'Agregar'}
+                  {loading ? 'Guardando...' : editing ? 'Guardar cambios' : 'Registrar'}
                 </button>
                 {editing && (
                   <button

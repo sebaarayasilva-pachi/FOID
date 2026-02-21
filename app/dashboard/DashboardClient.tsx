@@ -72,6 +72,7 @@ type OverviewData = {
   kpis: {
     totalInvestments: number;
     totalLiabilities: number;
+    latestBankBalance: number;
     monthlyRentIncome: number;
     monthlyIncome: number;
     monthlyExpenses: number;
@@ -93,6 +94,7 @@ type OverviewData = {
     }[];
     investmentTrend?: Record<string, string | number>[];
     investmentTrendDaily?: { name: string; data: [number, number][]; color: string }[];
+    bankTrendDaily?: { name: string; data: [number, number][]; color: string }[];
     liabilitiesBreakdown: { category: string; monthlyPayment: number; balance: number }[];
     cashflowTrend: { month: string; income: number; expenses: number; net: number }[];
     rentals: { id: string; propertyName: string; monthlyRent: number; status: string }[];
@@ -105,6 +107,7 @@ const MENU_ITEMS = [
   { id: 'obligaciones', label: 'Obligaciones', href: '/dashboard/obligaciones', icon: 'chart' },
   { id: 'inversiones', label: 'Inversiones', href: '/dashboard/inversiones', icon: 'list' },
   { id: 'ingresos', label: 'Ingresos', href: '/dashboard/ingresos', icon: 'currency' },
+  { id: 'banco', label: 'Banco', href: '/dashboard/banco', icon: 'bank' },
   { id: 'arriendos', label: 'Arriendos', href: '/dashboard/arriendos', icon: 'building' },
   { id: 'alertas', label: 'Alertas', href: '#', icon: 'bell' },
 ];
@@ -146,6 +149,12 @@ function NavIcon({ icon }: { icon: string }) {
       return (
         <svg width={size} height={size} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      );
+    case 'bank':
+      return (
+        <svg width={size} height={size} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
         </svg>
       );
     case 'bell':
@@ -191,7 +200,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
       ? [{ month: 'Actual', ...Object.fromEntries(charts.investmentReturns.map((i) => [i.name, i.value])), 'Saldo total': charts.investmentReturns.reduce((s, i) => s + i.value, 0) }]
       : [];
 
-  const useDailyChart = charts.investmentTrendDaily && charts.investmentTrendDaily.some((s) => s.data.length > 0);
+  const useDailyChart = (charts.investmentTrendDaily?.some((s) => s.data.length > 0) ?? false) || (charts.bankTrendDaily?.some((s) => s.data.length > 0) ?? false);
 
   const monthToTimestamp = (monthStr: string | number): number => {
     if (typeof monthStr !== 'string' || !monthStr.includes('-')) return Date.now();
@@ -208,8 +217,12 @@ export function DashboardClient({ data }: { data: OverviewData }) {
     return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`;
   };
 
-  const investmentSeries: Highcharts.SeriesOptionsType[] = useDailyChart && charts.investmentTrendDaily
-    ? charts.investmentTrendDaily.map((s) => ({
+  const allDailySeries = [
+    ...(charts.investmentTrendDaily ?? []),
+    ...(charts.bankTrendDaily ?? []),
+  ];
+  const investmentSeries: Highcharts.SeriesOptionsType[] = useDailyChart && allDailySeries.length > 0
+    ? allDailySeries.map((s) => ({
         type: 'area' as const,
         name: s.name,
         data: s.data,
@@ -505,13 +518,19 @@ export function DashboardClient({ data }: { data: OverviewData }) {
         </header>
 
         <div className="flex-1 min-h-0 p-4 flex flex-col gap-3 overflow-hidden">
-          <section className="grid grid-cols-4 gap-3 shrink-0">
+          <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 shrink-0">
             <KpiCard
               title="Total Inversiones"
               value={formatCurrencyShort(kpis.totalInvestments)}
               fullValue={formatCurrency(kpis.totalInvestments)}
               trend={charts.investmentReturns.length ? (charts.investmentReturns[0]?.returnPct ?? 0) * 100 : undefined}
               sparkline={sparklineData?.income}
+              positive
+            />
+            <KpiCard
+              title="Saldo Banco"
+              value={formatCurrencyShort(kpis.latestBankBalance)}
+              fullValue={formatCurrency(kpis.latestBankBalance)}
               positive
             />
             <KpiCard
@@ -539,7 +558,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
           </section>
 
           <section className="flex-1 min-h-0 grid grid-cols-2 gap-3 overflow-hidden">
-            <ChartCard title={useDailyChart ? 'Saldo diario por inversión' : 'Variación del saldo en el tiempo'} compact>
+            <ChartCard title={useDailyChart ? 'Saldo diario (inversiones + banco)' : 'Variación del saldo en el tiempo'} compact>
               {(useDailyChart && investmentSeries.length > 0) || (charts.investmentReturns.length > 0 && trendData.length > 0) ? (
                 <div className="space-y-1 min-h-0 flex flex-col">
                   <HighchartsReact highcharts={Highcharts} constructorType="stockChart" options={investmentChartOptions} containerProps={{ style: { height: INVESTMENT_CHART_HEIGHT } }} />
@@ -550,7 +569,13 @@ export function DashboardClient({ data }: { data: OverviewData }) {
                         <span className="text-slate-100 font-semibold tabular-nums shrink-0">{formatCurrencyShort(inv.value)}</span>
                       </div>
                     ))}
-                    <p className="text-slate-500 text-xs pt-1 border-t border-slate-800">Total {formatCurrency(totalInv)}</p>
+                    {kpis.latestBankBalance > 0 && (
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-slate-300 font-medium truncate pr-2">Banco</span>
+                        <span className="text-slate-100 font-semibold tabular-nums shrink-0">{formatCurrencyShort(kpis.latestBankBalance)}</span>
+                      </div>
+                    )}
+                    <p className="text-slate-500 text-xs pt-1 border-t border-slate-800">Total inversiones {formatCurrency(totalInv)}{kpis.latestBankBalance > 0 ? ` · Banco ${formatCurrencyShort(kpis.latestBankBalance)}` : ''}</p>
                   </div>
                 </div>
               ) : (

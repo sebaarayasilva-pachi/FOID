@@ -14,6 +14,8 @@ const MENU_ITEMS = [
   { id: 'import', label: 'Import', href: '/dashboard/import' },
   { id: 'obligaciones', label: 'Obligaciones', href: '/dashboard/obligaciones' },
   { id: 'inversiones', label: 'Inversiones', href: '/dashboard/inversiones' },
+  { id: 'ingresos', label: 'Ingresos', href: '/dashboard/ingresos' },
+  { id: 'banco', label: 'Banco', href: '/dashboard/banco' },
   { id: 'arriendos', label: 'Arriendos', href: '/dashboard/arriendos' },
 ];
 

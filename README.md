@@ -6,7 +6,7 @@ Dashboard único con gráficos para inversiones, pasivos, flujo de caja y arrien
 
 - **Next.js 14** + App Router
 - **Prisma** + PostgreSQL
-- **Recharts** para gráficos
+- **Highcharts** para gráficos
 - **Tailwind CSS**
 
 ## Setup local
