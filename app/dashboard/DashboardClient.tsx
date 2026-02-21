@@ -386,7 +386,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
 
   const cashflowChartOptions: Highcharts.Options = {
     ...DARK_THEME,
-    chart: { ...DARK_THEME.chart, height: CHART_HEIGHT, type: 'area' },
+    chart: { ...DARK_THEME.chart, height: CHART_HEIGHT, type: 'column' },
     title: { text: undefined },
     xAxis: {
       ...DARK_THEME.xAxis,
@@ -399,30 +399,39 @@ export function DashboardClient({ data }: { data: OverviewData }) {
     },
     tooltip: {
       ...DARK_THEME.tooltip,
+      shared: true,
       formatter: function () {
-        const idx = (this as { index?: number; x?: number }).index ?? (this as { x?: number }).x ?? 0;
+        const idx = (this as { point?: { index?: number } }).point?.index ?? (this as { x?: number }).x ?? 0;
         const d = charts.cashflowTrend[idx];
         return `<b>${formatMonth(d?.month ?? '')}</b><br/>Ingresos: ${formatCurrency(d?.income ?? 0)}<br/>Egresos: ${formatCurrency(d?.expenses ?? 0)}<br/>Neto: ${formatCurrency(d?.net ?? 0)}`;
       },
     },
-    legend: { enabled: false },
+    legend: { enabled: true, align: 'center', verticalAlign: 'bottom' },
     plotOptions: {
-      area: {
-        fillOpacity: 0.5,
-        marker: { radius: 3 },
-        lineWidth: 2,
-      },
+      column: { stacking: undefined, borderWidth: 0 },
     },
-    series: [{
-      type: 'area',
-      name: 'Flujo neto',
-      data: charts.cashflowTrend.map((c) => c.net),
-      color: '#22c55e',
-      fillColor: {
-        linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-        stops: [[0, 'rgba(34,197,94,0.6)'], [1, 'rgba(34,197,94,0)']],
+    series: [
+      {
+        type: 'column',
+        name: 'Ingresos',
+        data: charts.cashflowTrend.map((c) => c.income),
+        color: '#22c55e',
       },
-    }],
+      {
+        type: 'column',
+        name: 'Egresos',
+        data: charts.cashflowTrend.map((c) => c.expenses),
+        color: '#f43f5e',
+      },
+      {
+        type: 'line',
+        name: 'Neto',
+        data: charts.cashflowTrend.map((c) => c.net),
+        color: '#38bdf8',
+        lineWidth: 3,
+        marker: { radius: 4 },
+      },
+    ],
   };
 
   const PIE_CHART_HEIGHT = 180;

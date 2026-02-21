@@ -7,17 +7,13 @@ function toNum(d: Decimal | number | null | undefined): number {
 }
 
 export async function getOverview(tenantId: string) {
-  const [investments, liabilities, rentals, cashflowMonths, otherIncomes, bankBalances] = await Promise.all([
+  const [investments, liabilities, rentals, otherIncomes, bankBalances] = await Promise.all([
     prisma.investment.findMany({
       where: { tenantId },
       include: { movements: { orderBy: { fecha: 'asc' } } },
     }),
     prisma.liability.findMany({ where: { tenantId } }),
     prisma.rental.findMany({ where: { tenantId } }),
-    prisma.cashflowMonth.findMany({
-      where: { tenantId },
-      orderBy: { month: 'asc' },
-    }),
     prisma.otherIncome.findMany({ where: { tenantId } }),
     prisma.bankBalance.findMany({
       where: { tenantId },
@@ -66,18 +62,11 @@ export async function getOverview(tenantId: string) {
   const currentMonthStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
   const rescatesLastMonth = rescatesByMonth[currentMonthStr] ?? 0;
 
-  const lastCashflow = cashflowMonths[cashflowMonths.length - 1];
-  if (lastCashflow) {
-    const rescatesInLast = rescatesByMonth[lastCashflow.month] ?? 0;
-    monthlyIncome = toNum(lastCashflow.income) + rescatesInLast + otherIncomeMonthly;
-    monthlyExpenses = toNum(lastCashflow.expenses);
-    monthlyNetCashflow = monthlyIncome - monthlyExpenses;
-  } else {
-    monthlyIncome =
-      monthlyRentIncome + investments.reduce((sum, i) => sum + toNum(i.monthlyIncome), 0) + rescatesLastMonth + otherIncomeMonthly;
-    monthlyExpenses = liabilities.reduce((sum, l) => sum + toNum(l.monthlyPayment), 0);
-    monthlyNetCashflow = monthlyIncome - monthlyExpenses;
-  }
+  // Flujo neto = ingresos - egresos (sin CashflowMonth: usamos arriendos, rescates, otros, inversiones - pasivos)
+  monthlyIncome =
+    monthlyRentIncome + investments.reduce((sum, i) => sum + toNum(i.monthlyIncome), 0) + rescatesLastMonth + otherIncomeMonthly;
+  monthlyExpenses = liabilities.reduce((sum, l) => sum + toNum(l.monthlyPayment), 0);
+  monthlyNetCashflow = monthlyIncome - monthlyExpenses;
 
   const investmentAllocation = Object.entries(
     investments.reduce<Record<string, number>>((acc, i) => {
@@ -218,32 +207,19 @@ export async function getOverview(tenantId: string) {
     return row;
   });
 
-  // Flujo de caja: si hay CashflowMonth usamos eso; si no, estimamos desde arriendos + inversiones + otros ingresos - pasivos
-  // Rescates se integran como ingreso (intereses/dividendos de inversiones)
+  // Flujo de caja: arriendos + inversiones + rescates + otros ingresos - cuotas pasivos (sin CashflowMonth)
   const baseIncome = monthlyRentIncome + investments.reduce((s, i) => s + toNum(i.monthlyIncome), 0) + otherIncomeMonthly;
   const baseExpenses = liabilities.reduce((s, l) => s + toNum(l.monthlyPayment), 0);
-  const cashflowTrend =
-    cashflowMonths.length > 0
-      ? cashflowMonths.slice(-12).map((c) => {
-          const rescates = rescatesByMonth[c.month] ?? 0;
-          const income = toNum(c.income) + rescates + otherIncomeMonthly;
-          return {
-            month: c.month,
-            income,
-            expenses: toNum(c.expenses),
-            net: income - toNum(c.expenses),
-          };
-        })
-      : last12Months.map((monthStr) => {
-          const rescates = rescatesByMonth[monthStr] ?? 0;
-          const income = baseIncome + rescates;
-          return {
-            month: monthStr,
-            income,
-            expenses: baseExpenses,
-            net: income - baseExpenses,
-          };
-        });
+  const cashflowTrend = last12Months.map((monthStr) => {
+    const rescates = rescatesByMonth[monthStr] ?? 0;
+    const income = baseIncome + rescates;
+    return {
+      month: monthStr,
+      income,
+      expenses: baseExpenses,
+      net: income - baseExpenses,
+    };
+  });
 
   const rentalsList = rentals.map((r) => ({
     id: r.id,
