@@ -386,16 +386,25 @@ export function DashboardClient({ data }: { data: OverviewData }) {
 
   const cashflowChartOptions: Highcharts.Options = {
     ...DARK_THEME,
-    chart: { ...DARK_THEME.chart, height: CHART_HEIGHT, type: 'column' },
+    chart: { ...DARK_THEME.chart, height: CHART_HEIGHT, type: 'spline' },
     title: { text: undefined },
     xAxis: {
       ...DARK_THEME.xAxis,
       categories: charts.cashflowTrend.map((c) => formatMonth(c.month)),
+      tickLength: 0,
     },
     yAxis: {
       ...DARK_THEME.yAxis,
       title: { text: undefined },
       labels: { formatter: function () { return formatCurrencyShort(Number(this.value)); } },
+      gridLineColor: 'rgba(51,65,85,0.4)',
+      plotLines: [{
+        value: 0,
+        color: '#64748b',
+        width: 1,
+        dashStyle: 'Dash',
+        zIndex: 2,
+      }],
     },
     tooltip: {
       ...DARK_THEME.tooltip,
@@ -403,33 +412,39 @@ export function DashboardClient({ data }: { data: OverviewData }) {
       formatter: function () {
         const idx = (this as { point?: { index?: number } }).point?.index ?? (this as { x?: number }).x ?? 0;
         const d = charts.cashflowTrend[idx];
-        return `<b>${formatMonth(d?.month ?? '')}</b><br/>Ingresos: ${formatCurrency(d?.income ?? 0)}<br/>Egresos: ${formatCurrency(d?.expenses ?? 0)}<br/>Neto: ${formatCurrency(d?.net ?? 0)}`;
+        return `<b>${formatMonth(d?.month ?? '')}</b><br/><span style="color:#22c55e">Ingresos:</span> ${formatCurrency(d?.income ?? 0)}<br/><span style="color:#f43f5e">Egresos:</span> ${formatCurrency(d?.expenses ?? 0)}<br/><span style="color:#38bdf8;font-weight:600">Neto:</span> ${formatCurrency(d?.net ?? 0)}`;
       },
     },
-    legend: { enabled: true, align: 'center', verticalAlign: 'bottom' },
+    legend: { enabled: true, align: 'center', verticalAlign: 'bottom', itemDistance: 20 },
     plotOptions: {
-      column: { stacking: undefined, borderWidth: 0 },
+      spline: {
+        lineWidth: 2.5,
+        marker: { radius: 3, symbol: 'circle' },
+      },
     },
     series: [
       {
-        type: 'column',
+        type: 'spline',
         name: 'Ingresos',
         data: charts.cashflowTrend.map((c) => c.income),
         color: '#22c55e',
+        marker: { fillColor: '#22c55e' },
       },
       {
-        type: 'column',
+        type: 'spline',
         name: 'Egresos',
         data: charts.cashflowTrend.map((c) => c.expenses),
         color: '#f43f5e',
+        marker: { fillColor: '#f43f5e' },
       },
       {
-        type: 'line',
+        type: 'spline',
         name: 'Neto',
         data: charts.cashflowTrend.map((c) => c.net),
         color: '#38bdf8',
         lineWidth: 3,
-        marker: { radius: 4 },
+        marker: { radius: 4, fillColor: '#0f172a', lineWidth: 2, lineColor: '#38bdf8' },
+        zIndex: 5,
       },
     ],
   };
