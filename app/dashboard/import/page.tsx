@@ -9,7 +9,7 @@ const MENU_ITEMS = [
   { id: 'import', label: 'Import', href: '/dashboard/import' },
   { id: 'obligaciones', label: 'Obligaciones', href: '/dashboard/obligaciones' },
   { id: 'inversiones', label: 'Inversiones', href: '/dashboard/inversiones' },
-  { id: 'flujo', label: 'Flujo de Caja', href: '#' },
+  { id: 'ingresos', label: 'Ingresos', href: '/dashboard/ingresos' },
   { id: 'arriendos', label: 'Arriendos', href: '/dashboard/arriendos' },
   { id: 'alertas', label: 'Alertas', href: '#' },
 ];

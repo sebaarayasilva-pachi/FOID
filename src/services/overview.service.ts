@@ -7,7 +7,7 @@ function toNum(d: Decimal | number | null | undefined): number {
 }
 
 export async function getOverview(tenantId: string) {
-  const [investments, liabilities, rentals, cashflowMonths] = await Promise.all([
+  const [investments, liabilities, rentals, cashflowMonths, otherIncomes] = await Promise.all([
     prisma.investment.findMany({
       where: { tenantId },
       include: { movements: { orderBy: { fecha: 'asc' } } },
@@ -18,7 +18,20 @@ export async function getOverview(tenantId: string) {
       where: { tenantId },
       orderBy: { month: 'asc' },
     }),
+    prisma.otherIncome.findMany({ where: { tenantId } }),
   ]);
+
+  // Otros ingresos: monto mensual equivalente (se suma al flujo de caja)
+  const otherIncomeMonthly = otherIncomes.reduce((s, i) => {
+    const amt = toNum(i.amount);
+    switch (i.frequency) {
+      case 'MENSUAL': return s + amt;
+      case 'SEMANAL': return s + amt * 4.33;
+      case 'TRIMESTRAL': return s + amt / 3;
+      case 'ANUAL': return s + amt / 12;
+      default: return s + amt;
+    }
+  }, 0);
 
   const totalInvestments = investments.reduce(
     (sum, i) => sum + toNum(i.currentValue ?? i.capitalInvested),
@@ -29,18 +42,34 @@ export async function getOverview(tenantId: string) {
     .filter((r) => (r.status ?? '').toUpperCase() === 'RENTED')
     .reduce((sum, r) => sum + toNum(r.monthlyRent), 0);
 
+  // Rescates por mes (intereses/dividendos de inversiones → integrados al flujo como ingreso)
+  const rescatesByMonth: Record<string, number> = {};
+  for (const inv of investments) {
+    for (const mov of inv.movements) {
+      if (mov.tipo === 'RESCATE') {
+        const d = new Date(mov.fecha);
+        const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        rescatesByMonth[monthStr] = (rescatesByMonth[monthStr] ?? 0) + toNum(mov.monto);
+      }
+    }
+  }
+
   let monthlyIncome: number;
   let monthlyExpenses: number;
   let monthlyNetCashflow: number;
 
+  const currentMonthStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+  const rescatesLastMonth = rescatesByMonth[currentMonthStr] ?? 0;
+
   const lastCashflow = cashflowMonths[cashflowMonths.length - 1];
   if (lastCashflow) {
-    monthlyIncome = toNum(lastCashflow.income);
+    const rescatesInLast = rescatesByMonth[lastCashflow.month] ?? 0;
+    monthlyIncome = toNum(lastCashflow.income) + rescatesInLast + otherIncomeMonthly;
     monthlyExpenses = toNum(lastCashflow.expenses);
     monthlyNetCashflow = monthlyIncome - monthlyExpenses;
   } else {
     monthlyIncome =
-      monthlyRentIncome + investments.reduce((sum, i) => sum + toNum(i.monthlyIncome), 0);
+      monthlyRentIncome + investments.reduce((sum, i) => sum + toNum(i.monthlyIncome), 0) + rescatesLastMonth + otherIncomeMonthly;
     monthlyExpenses = liabilities.reduce((sum, l) => sum + toNum(l.monthlyPayment), 0);
     monthlyNetCashflow = monthlyIncome - monthlyExpenses;
   }
@@ -97,7 +126,7 @@ export async function getOverview(tenantId: string) {
 
   // Saldo diario por inversión: una serie de [timestamp, balance] por cada inversión
   const COLORS = ['#38bdf8', '#34d399', '#a78bfa', '#fbbf24', '#f472b6', '#2dd4bf'];
-  const investmentTrendDaily: { name: string; data: [number, number][]; color: string }[] = investments.map((inv, idx) => {
+  const rawSeries = investments.map((inv, idx) => {
     const points: [number, number][] = [];
     const apertura = inv.fechaApertura ? new Date(inv.fechaApertura) : new Date(inv.createdAt);
     let balance = toNum(inv.capitalInvested);
@@ -119,10 +148,21 @@ export async function getOverview(tenantId: string) {
         points[points.length - 1] = [points[points.length - 1][0], toNum(inv.currentValue)];
       }
     }
+    const sorted = points.sort((a, b) => a[0] - b[0]);
+    return { name: inv.name, data: sorted, color: COLORS[idx % COLORS.length] };
+  });
+
+  // Extender series con 1 solo punto hasta la fecha más reciente para que todas las líneas sean visibles
+  const maxTime = Math.max(...rawSeries.flatMap((s) => s.data.map((p) => p[0])), now.getTime());
+  const investmentTrendDaily = rawSeries.map((s) => {
+    const data = [...s.data];
+    if (data.length === 1 && data[0][0] < maxTime) {
+      data.push([maxTime, data[0][1]]);
+    }
     return {
-      name: inv.name.length > 14 ? inv.name.slice(0, 12) + '…' : inv.name,
-      data: points.sort((a, b) => a[0] - b[0]),
-      color: COLORS[idx % COLORS.length],
+      name: s.name.length > 14 ? s.name.slice(0, 12) + '…' : s.name,
+      data,
+      color: s.color,
     };
   });
 
@@ -162,12 +202,32 @@ export async function getOverview(tenantId: string) {
     return row;
   });
 
-  const cashflowTrend = cashflowMonths.slice(-12).map((c) => ({
-    month: c.month,
-    income: toNum(c.income),
-    expenses: toNum(c.expenses),
-    net: toNum(c.income) - toNum(c.expenses),
-  }));
+  // Flujo de caja: si hay CashflowMonth usamos eso; si no, estimamos desde arriendos + inversiones + otros ingresos - pasivos
+  // Rescates se integran como ingreso (intereses/dividendos de inversiones)
+  const baseIncome = monthlyRentIncome + investments.reduce((s, i) => s + toNum(i.monthlyIncome), 0) + otherIncomeMonthly;
+  const baseExpenses = liabilities.reduce((s, l) => s + toNum(l.monthlyPayment), 0);
+  const cashflowTrend =
+    cashflowMonths.length > 0
+      ? cashflowMonths.slice(-12).map((c) => {
+          const rescates = rescatesByMonth[c.month] ?? 0;
+          const income = toNum(c.income) + rescates + otherIncomeMonthly;
+          return {
+            month: c.month,
+            income,
+            expenses: toNum(c.expenses),
+            net: income - toNum(c.expenses),
+          };
+        })
+      : last12Months.map((monthStr) => {
+          const rescates = rescatesByMonth[monthStr] ?? 0;
+          const income = baseIncome + rescates;
+          return {
+            month: monthStr,
+            income,
+            expenses: baseExpenses,
+            net: income - baseExpenses,
+          };
+        });
 
   const rentalsList = rentals.map((r) => ({
     id: r.id,
@@ -177,10 +237,10 @@ export async function getOverview(tenantId: string) {
     tenantName: r.tenantName ?? '',
   }));
 
-  const cashflowForSparkline = cashflowMonths.slice(-6).map((c) => ({
-    income: toNum(c.income),
-    expenses: toNum(c.expenses),
-    net: toNum(c.income) - toNum(c.expenses),
+  const cashflowForSparkline = cashflowTrend.slice(-6).map((c) => ({
+    income: c.income,
+    expenses: c.expenses,
+    net: c.net,
   }));
   const prevNet = cashflowForSparkline.length >= 2 ? cashflowForSparkline[cashflowForSparkline.length - 2].net : 0;
   const currNet = monthlyNetCashflow;

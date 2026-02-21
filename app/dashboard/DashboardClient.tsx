@@ -104,7 +104,7 @@ const MENU_ITEMS = [
   { id: 'import', label: 'Import', href: '/dashboard/import', icon: 'upload' },
   { id: 'obligaciones', label: 'Obligaciones', href: '/dashboard/obligaciones', icon: 'chart' },
   { id: 'inversiones', label: 'Inversiones', href: '/dashboard/inversiones', icon: 'list' },
-  { id: 'flujo', label: 'Flujo de Caja', href: '#', icon: 'currency' },
+  { id: 'ingresos', label: 'Ingresos', href: '/dashboard/ingresos', icon: 'currency' },
   { id: 'arriendos', label: 'Arriendos', href: '/dashboard/arriendos', icon: 'building' },
   { id: 'alertas', label: 'Alertas', href: '#', icon: 'bell' },
 ];
@@ -203,12 +203,22 @@ export function DashboardClient({ data }: { data: OverviewData }) {
     return new Date(y, m - 1, 1).getTime();
   };
 
+  const hexToRgba = (hex: string, a: number) => {
+    const h = hex.replace('#', '');
+    return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`;
+  };
+
   const investmentSeries: Highcharts.SeriesOptionsType[] = useDailyChart && charts.investmentTrendDaily
     ? charts.investmentTrendDaily.map((s) => ({
-        type: 'line' as const,
+        type: 'area' as const,
         name: s.name,
         data: s.data,
         color: s.color,
+        fillColor: {
+          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+          stops: [[0, hexToRgba(s.color, 0.35)], [1, hexToRgba(s.color, 0.05)]] as [number, string][],
+        },
+        fillOpacity: 0.35,
         lineWidth: 2.5,
         marker: { radius: 3, symbol: 'circle' },
         showInNavigator: true,
@@ -229,10 +239,6 @@ export function DashboardClient({ data }: { data: OverviewData }) {
           : []),
         ...charts.investmentReturns.map((inv, i) => {
           const c = COLORS[(i + 1) % COLORS.length];
-          const hexToRgba = (hex: string, a: number) => {
-            const h = hex.replace('#', '');
-            return `rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},${a})`;
-          };
           return {
             type: 'area' as const,
             name: inv.name.length > 14 ? inv.name.slice(0, 12) + '…' : inv.name,

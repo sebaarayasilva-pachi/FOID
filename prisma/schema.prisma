@@ -82,3 +82,16 @@ model Rental {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 }
+
+model OtherIncome {
+  id          String   @id @default(cuid())
+  tenantId    String
+
+  @@index([tenantId])
+  description String   // descripción del ingreso
+  amount      Decimal  // monto por período
+  frequency   String   // MENSUAL | SEMANAL | TRIMESTRAL | ANUAL
+  type        String   // OTROS | DIVIDENDOS_EMPRESAS
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
