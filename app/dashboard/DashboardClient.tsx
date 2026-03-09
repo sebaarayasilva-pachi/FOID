@@ -395,7 +395,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
 
   const cashflowChartOptions: Highcharts.Options = {
     ...DARK_THEME,
-    chart: { ...DARK_THEME.chart, height: 160, type: 'area' },
+    chart: { ...DARK_THEME.chart, height: 120, type: 'area' },
     title: { text: undefined },
     xAxis: {
       ...DARK_THEME.xAxis,
@@ -433,7 +433,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
 
   const pieChartOptions: Highcharts.Options = {
     ...DARK_THEME,
-    chart: { ...DARK_THEME.chart, height: 160, type: 'pie' },
+    chart: { ...DARK_THEME.chart, height: 120, type: 'pie' },
     title: { text: undefined },
     tooltip: {
       ...DARK_THEME.tooltip,
@@ -456,7 +456,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
 
   const assetsPieChartOptions: Highcharts.Options = {
     ...DARK_THEME,
-    chart: { ...DARK_THEME.chart, height: 160, type: 'pie' },
+    chart: { ...DARK_THEME.chart, height: 120, type: 'pie' },
     title: { text: undefined },
     tooltip: {
       ...DARK_THEME.tooltip,
@@ -479,7 +479,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
 
   const patrimonioBarOptions: Highcharts.Options = {
     ...DARK_THEME,
-    chart: { ...DARK_THEME.chart, height: 160, type: 'bar' },
+    chart: { ...DARK_THEME.chart, height: 120, type: 'bar' },
     title: { text: undefined },
     xAxis: {
       ...DARK_THEME.xAxis,
