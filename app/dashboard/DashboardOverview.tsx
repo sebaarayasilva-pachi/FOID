@@ -6,7 +6,7 @@ import { DashboardSidebar } from './DashboardSidebar';
 import { EconomicTicker } from './EconomicTicker';
 import HighchartsReact from 'highcharts-react-official';
 
-const CHART_HEIGHT = 120;
+const CHART_HEIGHT = 160;
 const COLORS = ['#38bdf8', '#34d399', '#a78bfa', '#fbbf24', '#f472b6', '#2dd4bf'];
 
 function formatCurrency(n: number) {

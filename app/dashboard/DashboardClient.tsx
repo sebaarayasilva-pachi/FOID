@@ -347,7 +347,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
       data: charts.cashflowTrend.map((c) => c.net),
       color: '#14b8a6',
       fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, 'rgba(20,184,166,0.5)'], [1, 'rgba(20,184,166,0)']] },
-      lineWidth: 2.5,
+      lineWidth: 1,
     },
   ];
   if (hasBudget) {
@@ -358,7 +358,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
         data: charts.cashflowTrend.map((c) => c.budgetIncome ?? null),
         color: '#4ade80',
         dashStyle: 'Dash',
-        lineWidth: 2,
+        lineWidth: 1,
         marker: { enabled: false },
       },
       {
@@ -367,7 +367,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
         data: charts.cashflowTrend.map((c) => c.budgetExpenses ?? null),
         color: '#fb7185',
         dashStyle: 'Dash',
-        lineWidth: 2,
+        lineWidth: 1,
         marker: { enabled: false },
       },
       {
@@ -376,7 +376,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
         data: charts.cashflowTrend.map((c) => c.budgetNet ?? null),
         color: '#2dd4bf',
         dashStyle: 'Dash',
-        lineWidth: 2,
+        lineWidth: 1,
         marker: { enabled: false },
       }
     );
@@ -388,14 +388,14 @@ export function DashboardClient({ data }: { data: OverviewData }) {
       data: charts.cashflowTrend.map(() => charts.benchmarkNet!),
       color: '#a78bfa',
       dashStyle: 'ShortDot',
-      lineWidth: 2,
+      lineWidth: 1,
       marker: { enabled: false },
     });
   }
 
   const cashflowChartOptions: Highcharts.Options = {
     ...DARK_THEME,
-    chart: { ...DARK_THEME.chart, height: 120, type: 'area' },
+    chart: { ...DARK_THEME.chart, height: 160, type: 'area' },
     title: { text: undefined },
     xAxis: {
       ...DARK_THEME.xAxis,
@@ -424,8 +424,8 @@ export function DashboardClient({ data }: { data: OverviewData }) {
     plotOptions: {
       area: {
         fillOpacity: 0.4,
-        marker: { radius: 4 },
-        lineWidth: 2,
+        marker: { radius: 3 },
+        lineWidth: 1,
       },
     },
     series: cashflowSeries,
@@ -433,7 +433,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
 
   const pieChartOptions: Highcharts.Options = {
     ...DARK_THEME,
-    chart: { ...DARK_THEME.chart, height: 120, type: 'pie' },
+    chart: { ...DARK_THEME.chart, height: 160, type: 'pie' },
     title: { text: undefined },
     tooltip: {
       ...DARK_THEME.tooltip,
@@ -443,6 +443,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
     plotOptions: {
       pie: {
         innerSize: '60%',
+        borderWidth: 0,
         dataLabels: { enabled: false },
         colors: COLORS,
       },
@@ -456,7 +457,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
 
   const assetsPieChartOptions: Highcharts.Options = {
     ...DARK_THEME,
-    chart: { ...DARK_THEME.chart, height: 120, type: 'pie' },
+    chart: { ...DARK_THEME.chart, height: 160, type: 'pie' },
     title: { text: undefined },
     tooltip: {
       ...DARK_THEME.tooltip,
@@ -466,6 +467,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
     plotOptions: {
       pie: {
         innerSize: '60%',
+        borderWidth: 0,
         dataLabels: { enabled: false },
         colors: COLORS,
       },
@@ -479,7 +481,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
 
   const patrimonioBarOptions: Highcharts.Options = {
     ...DARK_THEME,
-    chart: { ...DARK_THEME.chart, height: 120, type: 'bar' },
+    chart: { ...DARK_THEME.chart, height: 160, type: 'bar' },
     title: { text: undefined },
     xAxis: {
       ...DARK_THEME.xAxis,
@@ -501,7 +503,8 @@ export function DashboardClient({ data }: { data: OverviewData }) {
     legend: { enabled: false },
     plotOptions: {
       bar: {
-        borderRadius: 4,
+        borderRadius: 2,
+        pointWidth: 12,
         dataLabels: {
           enabled: true,
           formatter: function () { return formatCurrencyShort(Number(this.y ?? 0)); },
