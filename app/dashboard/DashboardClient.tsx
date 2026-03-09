@@ -603,11 +603,8 @@ export function DashboardClient({ data }: { data: OverviewData }) {
             />
           </section>
 
-          <section
-            className="flex-1 min-h-0 overflow-hidden min-h-[280px]"
-            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '0.75rem' }}
-          >
-            <ChartCard title="Activos" compact href="/dashboard/inversiones" style={{ gridRow: 1, gridColumn: 1, minHeight: 0 }}>
+          <section className="grid grid-cols-2 gap-3" style={{ gridTemplateRows: '220px 220px' }}>
+            <ChartCard title="Activos" compact href="/dashboard/inversiones" className="h-[220px]">
               {charts.assetsBreakdown.length > 0 ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
                   <div className="shrink-0" style={{ height: PIE_CHART_HEIGHT }}>
@@ -642,7 +639,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
               )}
             </ChartCard>
 
-            <ChartCard title="Pasivos" compact href="/dashboard/obligaciones" style={{ gridRow: 2, gridColumn: 1, minHeight: 0 }}>
+            <ChartCard title="Pasivos" compact href="/dashboard/obligaciones" className="h-[220px]">
               {charts.liabilitiesBreakdown.length > 0 ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
                   <div className="shrink-0" style={{ height: PIE_CHART_HEIGHT }}>
@@ -677,7 +674,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
               )}
             </ChartCard>
 
-            <ChartCard title="Flujo de Caja" compact href="/dashboard/ingresos" style={{ gridRow: 1, gridColumn: 2, minHeight: 0 }}>
+            <ChartCard title="Flujo de Caja" compact href="/dashboard/ingresos" className="h-[220px]">
               {charts.cashflowTrend.length > 0 ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
                   <div className="shrink-0" style={{ height: CHART_HEIGHT }}>
@@ -698,7 +695,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
               )}
             </ChartCard>
 
-            <ChartCard title="Patrimonio" compact href="/dashboard" style={{ gridRow: 2, gridColumn: 2, minHeight: 0 }}>
+            <ChartCard title="Patrimonio" compact href="/dashboard" className="h-[220px]">
               {(kpis.totalAssets > 0 || kpis.totalLiabilities > 0) ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
                   <div className="shrink-0" style={{ height: CHART_HEIGHT }}>
