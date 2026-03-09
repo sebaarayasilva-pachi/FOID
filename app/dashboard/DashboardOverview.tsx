@@ -33,9 +33,9 @@ function EmptyChart() {
 
 function ChartCard({ title, children, compact, href, className }: { title: string; children: React.ReactNode; compact?: boolean; href?: string; className?: string }) {
   const card = (
-    <div className={`bg-slate-900/60 rounded-lg border border-slate-800/80 shadow flex flex-col min-h-0 overflow-hidden ${href ? 'cursor-pointer hover:border-slate-600' : ''} ${compact ? 'p-3' : 'p-6'}`}>
-      <h3 className={`font-semibold text-slate-200 shrink-0 ${compact ? 'text-xs mb-2' : 'text-sm mb-5'}`}>{title}</h3>
-      <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
+    <div className={`bg-slate-900/60 rounded-lg border border-slate-800/80 shadow flex flex-col min-h-0 overflow-hidden h-full ${href ? 'cursor-pointer hover:border-slate-600' : ''} ${compact ? 'p-3' : 'p-6'}`}>
+      <h3 className={`font-semibold text-slate-200 shrink-0 ${compact ? 'text-sm mb-2' : 'text-sm mb-5'}`}>{title}</h3>
+      <div className="flex-1 min-h-0 overflow-hidden relative">{children}</div>
     </div>
   );
   const wrap = `block min-h-0 overflow-hidden h-full ${className ?? ''}`.trim();
@@ -60,38 +60,38 @@ export function DashboardOverview(props: DashboardOverviewProps) {
     <div className="flex h-screen overflow-hidden bg-slate-950">
       <DashboardSidebar currentItemId="overview" />
       <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
-        <header className="flex items-center justify-between px-4 py-2 bg-slate-950/95 border-b border-slate-800/80 shrink-0">
+        <header className="flex items-center justify-between px-4 py-1.5 bg-slate-950/95 border-b border-slate-800/80 shrink-0">
           <h1 className="text-sm font-semibold text-slate-100 truncate">FOID — Family Office Invest Dashboard</h1>
           <span className="text-xs text-slate-500 shrink-0">Última actualización: Hoy</span>
         </header>
-        <div className="flex-1 min-h-0 p-4 flex flex-col gap-3 overflow-hidden">
-          <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
-            <div className="bg-slate-900/60 rounded-lg p-3 border border-slate-800/80">
+        <div className="flex-1 min-h-0 flex flex-col gap-1 overflow-hidden">
+          <section className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 px-3 pt-1.5 shrink-0">
+            <div className="bg-slate-900/60 rounded-lg px-2 py-1.5 border border-slate-800/80">
               <p className="text-[10px] text-slate-500 uppercase mb-0.5">Saldo Banco</p>
               <p className="text-lg font-bold text-emerald-400">{formatCurrencyShort(kpis.latestBankBalance)}</p>
             </div>
-            <div className="bg-slate-900/60 rounded-lg p-3 border border-slate-800/80">
+            <div className="bg-slate-900/60 rounded-lg px-2 py-1.5 border border-slate-800/80">
               <p className="text-[10px] text-slate-500 uppercase mb-0.5">Ingresos</p>
               <p className="text-lg font-bold text-emerald-400">{formatCurrencyShort(kpis.monthlyIncome)} / mes</p>
             </div>
-            <div className="bg-slate-900/60 rounded-lg p-3 border border-slate-800/80">
+            <div className="bg-slate-900/60 rounded-lg px-2 py-1.5 border border-slate-800/80">
               <p className="text-[10px] text-slate-500 uppercase mb-0.5">Egresos</p>
               <p className="text-lg font-bold text-rose-400">{formatCurrencyShort(kpis.monthlyExpenses)} / mes</p>
             </div>
-            <div className="bg-slate-900/60 rounded-lg p-3 border border-slate-800/80">
+            <div className="bg-slate-900/60 rounded-lg px-2 py-1.5 border border-slate-800/80">
               <p className="text-[10px] text-slate-500 uppercase mb-0.5">Flujo Neto</p>
               <p className="text-lg font-bold text-emerald-400">+{formatCurrencyShort(kpis.monthlyNetCashflow)} / mes</p>
             </div>
           </section>
-          <section className="grid gap-3 flex-1 min-h-0" style={{ gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr' }}>
+          <section className="grid gap-2 flex-1 min-h-0 px-3 pb-1.5" style={{ gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', minHeight: 0 }}>
             <div className="min-w-0 min-h-0 overflow-hidden relative h-full" style={{ gridColumn: 1, gridRow: 1 }}>
               <ChartCard title="Activos" compact href="/dashboard/inversiones">
               {charts.assetsBreakdown.length > 0 ? (
-                <div className="flex flex-col h-full min-h-0 gap-2">
-                  <div className="flex-[3] min-h-[120px] min-w-0">
+                <div className="absolute inset-0 flex flex-col gap-1">
+                  <div className="flex-1 min-h-0 min-w-0">
                     <HighchartsReact highcharts={Highcharts} options={assetsPieChartOptions} containerProps={{ style: { height: '100%', width: '100%', overflow: 'hidden' } }} />
                   </div>
-                  <div className="flex-1 min-h-0 overflow-y-auto pt-2 border-t border-slate-800">
+                  <div className="shrink-0 max-h-[35%] overflow-y-auto pt-1 border-t border-slate-800">
                     {charts.assetsBreakdown.map((a, i) => (
                       <div key={a.category} className="flex justify-between text-xs py-1">
                         <span>{a.category}</span>
@@ -109,10 +109,8 @@ export function DashboardOverview(props: DashboardOverviewProps) {
             <div className="min-w-0 min-h-0 overflow-hidden relative h-full" style={{ gridColumn: 2, gridRow: 1 }}>
               <ChartCard title="Flujo de Caja" compact href="/dashboard/ingresos">
               {charts.cashflowTrend.length > 0 ? (
-                <div className="flex flex-col h-full min-h-0">
-                  <div className="flex-1 min-h-[120px] min-w-0">
-                    <HighchartsReact highcharts={Highcharts} options={cashflowChartOptions} containerProps={{ style: { height: '100%', width: '100%', overflow: 'hidden' } }} />
-                  </div>
+                <div className="absolute inset-0">
+                  <HighchartsReact highcharts={Highcharts} options={cashflowChartOptions} containerProps={{ style: { height: '100%', width: '100%', overflow: 'hidden' } }} />
                 </div>
               ) : (
                 <EmptyChart />
@@ -122,11 +120,11 @@ export function DashboardOverview(props: DashboardOverviewProps) {
             <div className="min-w-0 min-h-0 overflow-hidden relative h-full" style={{ gridColumn: 1, gridRow: 2 }}>
               <ChartCard title="Pasivos" compact href="/dashboard/obligaciones">
               {charts.liabilitiesBreakdown.length > 0 ? (
-                <div className="flex flex-col h-full min-h-0 gap-2">
-                  <div className="flex-[3] min-h-[120px] min-w-0">
+                <div className="absolute inset-0 flex flex-col gap-1">
+                  <div className="flex-1 min-h-0 min-w-0">
                     <HighchartsReact highcharts={Highcharts} options={pieChartOptions} containerProps={{ style: { height: '100%', width: '100%', overflow: 'hidden' } }} />
                   </div>
-                  <div className="flex-1 min-h-0 overflow-y-auto pt-2 border-t border-slate-800">
+                  <div className="shrink-0 max-h-[35%] overflow-y-auto pt-1 border-t border-slate-800">
                     {charts.liabilitiesBreakdown.map((l) => (
                       <div key={l.category} className="flex justify-between text-xs py-1">
                         <span>{l.category}</span>
@@ -144,11 +142,11 @@ export function DashboardOverview(props: DashboardOverviewProps) {
             <div className="min-w-0 min-h-0 overflow-hidden relative h-full" style={{ gridColumn: 2, gridRow: 2 }}>
               <ChartCard title="Patrimonio" compact href="/dashboard">
               {(kpis.totalAssets > 0 || kpis.totalLiabilities > 0) ? (
-                <div className="flex flex-col h-full min-h-0">
-                  <div className="flex-1 min-h-[120px] min-w-0">
+                <div className="absolute inset-0 flex flex-col">
+                  <div className="flex-1 min-h-0">
                     <HighchartsReact highcharts={Highcharts} options={patrimonioBarOptions} containerProps={{ style: { height: '100%', width: '100%', overflow: 'hidden' } }} />
                   </div>
-                  <p className="text-slate-500 text-xs pt-2">Patrimonio = {formatCurrency(kpis.netWorth)}</p>
+                  <p className="text-slate-500 text-xs pt-1 shrink-0">Patrimonio = {formatCurrency(kpis.netWorth)}</p>
                 </div>
               ) : (
                 <EmptyChart />

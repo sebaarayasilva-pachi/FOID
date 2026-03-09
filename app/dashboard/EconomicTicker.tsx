@@ -37,7 +37,7 @@ export function EconomicTicker() {
   const duplicated = [...displayItems, ...displayItems, ...displayItems, ...displayItems];
 
   return (
-    <div className="shrink-0 h-8 min-h-8 bg-slate-900/95 border-t border-slate-800 overflow-hidden flex items-center">
+    <div className="shrink-0 h-6 min-h-6 bg-slate-900/95 border-t border-slate-800 overflow-hidden flex items-center">
       <div className="flex-1 overflow-hidden">
         <div className={`flex items-center gap-8 py-1 w-max ${!loading && items.length > 0 ? 'animate-ticker-scroll' : ''}`}>
           {duplicated.map((item, i) => (
