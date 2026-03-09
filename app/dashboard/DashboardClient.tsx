@@ -603,8 +603,9 @@ export function DashboardClient({ data }: { data: OverviewData }) {
             />
           </section>
 
-          <section className="grid grid-cols-2 gap-3" style={{ gridTemplateRows: '220px 220px' }}>
-            <ChartCard title="Activos" compact href="/dashboard/inversiones" className="h-[220px]">
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+            <section className="grid grid-cols-2 gap-3 flex-1 min-h-0" style={{ gridTemplateRows: 'minmax(0, 1fr) minmax(0, 1fr)' }}>
+            <ChartCard title="Activos" compact href="/dashboard/inversiones">
               {charts.assetsBreakdown.length > 0 ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
                   <div className="shrink-0" style={{ height: PIE_CHART_HEIGHT }}>
@@ -639,7 +640,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
               )}
             </ChartCard>
 
-            <ChartCard title="Pasivos" compact href="/dashboard/obligaciones" className="h-[220px]">
+            <ChartCard title="Pasivos" compact href="/dashboard/obligaciones">
               {charts.liabilitiesBreakdown.length > 0 ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
                   <div className="shrink-0" style={{ height: PIE_CHART_HEIGHT }}>
@@ -674,7 +675,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
               )}
             </ChartCard>
 
-            <ChartCard title="Flujo de Caja" compact href="/dashboard/ingresos" className="h-[220px]">
+            <ChartCard title="Flujo de Caja" compact href="/dashboard/ingresos">
               {charts.cashflowTrend.length > 0 ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
                   <div className="shrink-0" style={{ height: CHART_HEIGHT }}>
@@ -695,7 +696,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
               )}
             </ChartCard>
 
-            <ChartCard title="Patrimonio" compact href="/dashboard" className="h-[220px]">
+            <ChartCard title="Patrimonio" compact href="/dashboard">
               {(kpis.totalAssets > 0 || kpis.totalLiabilities > 0) ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
                   <div className="shrink-0" style={{ height: CHART_HEIGHT }}>
@@ -711,7 +712,8 @@ export function DashboardClient({ data }: { data: OverviewData }) {
                 <EmptyChart />
               )}
             </ChartCard>
-          </section>
+            </section>
+          </div>
         </div>
         <EconomicTicker />
       </main>
@@ -772,7 +774,7 @@ function ChartCard({ title, children, compact, href, style, className }: { title
       <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
     </div>
   );
-  const wrapperClass = `block min-h-0 h-full ${className ?? ''}`.trim();
+  const wrapperClass = `block min-h-0 h-full overflow-hidden ${className ?? ''}`.trim();
   if (href) return <Link href={href} className={wrapperClass} style={style}>{card}</Link>;
   return <div className={wrapperClass} style={style}>{card}</div>;
 }
