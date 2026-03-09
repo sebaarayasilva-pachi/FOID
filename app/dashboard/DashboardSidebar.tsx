@@ -4,11 +4,11 @@ import Link from 'next/link';
 
 export const DASHBOARD_MENU_ITEMS = [
   { id: 'overview', label: 'Overview', href: '/dashboard', icon: 'home' },
-  { id: 'import', label: 'Import', href: '/dashboard/import', icon: 'upload' },
-  { id: 'obligaciones', label: 'Obligaciones', href: '/dashboard/obligaciones', icon: 'chart' },
+  { id: 'activos', label: 'Activos', href: '/dashboard/inversiones', icon: 'trendingUp' },
   { id: 'inversiones', label: 'Inversiones', href: '/dashboard/inversiones', icon: 'list' },
   { id: 'ingresos', label: 'Ingresos', href: '/dashboard/ingresos', icon: 'currency' },
   { id: 'banco', label: 'Banco', href: '/dashboard/banco', icon: 'bank' },
+  { id: 'pasivos', label: 'Pasivos', href: '/dashboard/obligaciones', icon: 'chart' },
   { id: 'arriendos', label: 'Arriendos', href: '/dashboard/arriendos', icon: 'building' },
   { id: 'alertas', label: 'Alertas', href: '#', icon: 'bell' },
 ] as const;
@@ -64,6 +64,12 @@ export function NavIcon({ icon }: { icon: string }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-6-6v0a6 6 0 00-6 6v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
         </svg>
       );
+    case 'trendingUp':
+      return (
+        <svg width={size} height={size} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      );
     default:
       return null;
   }
@@ -78,17 +84,19 @@ export function DashboardSidebar({ currentItemId = 'overview' }: DashboardSideba
     <aside className="w-16 flex flex-col items-center py-3 bg-slate-900/80 border-r border-slate-800 shrink-0">
       <h2 className="text-[10px] font-bold text-slate-400 mb-4 tracking-widest">FOID</h2>
       <nav className="flex flex-col items-center gap-0.5">
-        {DASHBOARD_MENU_ITEMS.map((item) => (
-          <Link
-            key={item.id}
-            href={item.href}
-            className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[10px] transition-colors ${
-              item.id === currentItemId ? 'bg-sky-500/20 text-sky-400' : 'text-slate-500 hover:bg-slate-800/80 hover:text-slate-300'
-            }`}
-          >
-            <NavIcon icon={item.icon} />
-            {item.label}
-          </Link>
+        {DASHBOARD_MENU_ITEMS.map((item, i) => (
+          <span key={item.id} className="contents">
+            {item.id === 'pasivos' && <div className="w-8 h-px bg-slate-700 my-1" aria-hidden />}
+            <Link
+              href={item.href}
+              className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[10px] transition-colors ${
+                item.id === currentItemId ? 'bg-sky-500/20 text-sky-400' : 'text-slate-500 hover:bg-slate-800/80 hover:text-slate-300'
+              }`}
+            >
+              <NavIcon icon={item.icon} />
+              {item.label}
+            </Link>
+          </span>
         ))}
       </nav>
     </aside>

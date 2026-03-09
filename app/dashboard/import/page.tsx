@@ -62,7 +62,7 @@ export default function ImportPage() {
 
   return (
     <div className="flex min-h-screen bg-slate-950">
-      <DashboardSidebar currentItemId="import" />
+      <DashboardSidebar currentItemId="overview" />
 
       <main className="flex-1 p-8 overflow-auto">
         <h1 className="text-2xl font-bold text-slate-100 mb-2">Importar CSV</h1>

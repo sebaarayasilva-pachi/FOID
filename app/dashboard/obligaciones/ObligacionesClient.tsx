@@ -157,7 +157,7 @@ export function ObligacionesClient({
 
   return (
     <div className="flex min-h-screen bg-slate-950">
-      <DashboardSidebar currentItemId="obligaciones" />
+      <DashboardSidebar currentItemId="pasivos" />
 
       <main className="flex-1 p-8 overflow-auto">
         <div className="flex items-center justify-between mb-6">
