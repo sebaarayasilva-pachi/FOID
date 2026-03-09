@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Highcharts from 'highcharts/highstock';
 import { DashboardSidebar, NavIcon } from './DashboardSidebar';
+import { EconomicTicker } from './EconomicTicker';
 import HighchartsReact from 'highcharts-react-official';
 
 const COLORS = ['#38bdf8', '#34d399', '#a78bfa', '#fbbf24', '#f472b6', '#2dd4bf'];
@@ -660,6 +661,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
             </ChartCard>
           </section>
         </div>
+        <EconomicTicker />
       </main>
     </div>
   );
