@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-cert
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV DATABASE_URL="postgresql://user:pass@localhost:5432/db"
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npx prisma generate
 RUN npm run build
 

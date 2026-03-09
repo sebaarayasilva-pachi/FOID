@@ -5,10 +5,12 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
+      - '--progress=plain'
       - '-t'
       - 'us-east5-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/foid-web:latest'
       - '.'
     id: 'build'
+    timeout: '1800s'
 
   - name: 'gcr.io/cloud-builders/docker'
     args:

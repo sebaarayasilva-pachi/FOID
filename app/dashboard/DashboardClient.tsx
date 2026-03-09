@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Highcharts from 'highcharts/highstock';
 import { DashboardSidebar, NavIcon } from './DashboardSidebar';
+import { DashboardOverview } from './DashboardOverview';
 import { EconomicTicker } from './EconomicTicker';
 import HighchartsReact from 'highcharts-react-official';
 
@@ -495,7 +496,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
       ...DARK_THEME.tooltip,
       pointFormatter: function () {
         const val = Number(this.y ?? 0);
-        return `<span style="color:${this.color}">●</span> ${this.x}: <b>${formatCurrency(val)}</b>`;
+        return '<span style="color:' + (this as { color?: string }).color + '">' + String(this.x) + ': <b>' + formatCurrency(val) + '</b></span>';
       },
     },
     legend: { enabled: false },
@@ -520,211 +521,29 @@ export function DashboardClient({ data }: { data: OverviewData }) {
     }],
   };
 
-  const areaChartOptions: Highcharts.Options = {
-    ...DARK_THEME,
-    chart: { ...DARK_THEME.chart, height: CHART_BOX_HEIGHT, type: 'area' },
-    title: { text: undefined },
-    xAxis: {
-      ...DARK_THEME.xAxis,
-      categories: charts.cashflowTrend.length > 0
-        ? charts.cashflowTrend.map((c) => formatMonth(c.month))
-        : charts.rentals.map((r) => r.propertyName.slice(0, 8)),
-    },
-    yAxis: {
-      ...DARK_THEME.yAxis,
-      title: { text: undefined },
-      labels: { formatter: function () { return formatCurrencyShort(Number(this.value)); } },
-    },
-    tooltip: {
-      ...DARK_THEME.tooltip,
-      formatter: function () {
-        const val = this.y;
-        const label = this.x;
-        return `<b>${label}</b><br/>Ingresos: ${formatCurrency(Number(val ?? 0))}`;
-      },
-    },
-    legend: { enabled: false },
-    plotOptions: {
-      area: {
-        fillOpacity: 0.4,
-        marker: { radius: 4 },
-        lineWidth: 2,
-      },
-    },
-    series: [{
-      type: 'area',
-      name: 'Ingresos',
-      data: charts.cashflowTrend.length > 0
-        ? charts.cashflowTrend.map((c) => c.income)
-        : charts.rentals.map((r) => r.monthlyRent),
-      color: '#14b8a6',
-      fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, 'rgba(20,184,166,0.5)'], [1, 'rgba(20,184,166,0)']] },
-    }],
-  };
-
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-950">
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, background: 'red', color: 'white', padding: '8px 16px', fontSize: '14px', fontWeight: 'bold', textAlign: 'center' }}>
-        ✅ Build OK - {new Date().toISOString().slice(0, 19)}
-      </div>
-      <div style={{ height: 40 }} />
-      <DashboardSidebar currentItemId="overview" />
-
-      <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
-        <header className="flex items-center justify-between px-4 py-2 bg-slate-950/95 border-b border-slate-800/80 shrink-0">
-          <h1 className="text-sm font-semibold text-slate-100 truncate">FOID — Family Office Invest Dashboard</h1>
-          <span className="text-xs text-slate-500 shrink-0">Última actualización: Hoy</span>
-        </header>
-
-        <div className="flex-1 min-h-0 p-4 flex flex-col gap-3 overflow-hidden">
-          <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0 items-stretch">
-            <KpiCard
-              title="Saldo Banco"
-              value={formatCurrencyShort(kpis.latestBankBalance)}
-              fullValue={formatCurrency(kpis.latestBankBalance)}
-              positive
-            />
-            <KpiCard
-              title="Ingresos"
-              value={`${formatCurrencyShort(kpis.monthlyIncome)} / mes`}
-              fullValue={formatCurrency(kpis.monthlyIncome)}
-              sparkline={sparklineData?.income}
-              positive
-            />
-            <KpiCard
-              title="Egresos"
-              value={`${formatCurrencyShort(kpis.monthlyExpenses)} / mes`}
-              fullValue={formatCurrency(kpis.monthlyExpenses)}
-              positive={false}
-            />
-            <KpiCard
-              title="Flujo Neto"
-              value={`${kpis.monthlyNetCashflow >= 0 ? '+' : ''}${formatCurrencyShort(kpis.monthlyNetCashflow)} / mes`}
-              fullValue={formatCurrency(kpis.monthlyNetCashflow)}
-              trend={kpis.netTrendPct}
-              sparkline={sparklineData?.net}
-              highlight={kpis.monthlyNetCashflow >= 0}
-            />
-          </section>
-
-          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-            <section
-              className="grid grid-cols-2 gap-3 flex-1 min-h-0"
-              style={{ gridTemplateRows: 'minmax(0, 1fr) minmax(0, 1fr)' }}
-            >
-            <ChartCard title="Activos" compact href="/dashboard/inversiones">
-              {charts.assetsBreakdown.length > 0 ? (
-                <div className="flex flex-col h-full min-h-0 gap-2">
-                  <div className="shrink-0" style={{ height: PIE_CHART_HEIGHT }}>
-                    <HighchartsReact highcharts={Highcharts} options={assetsPieChartOptions} containerProps={{ style: { height: PIE_CHART_HEIGHT } }} />
-                  </div>
-                  <div className="flex-1 min-h-0 overflow-y-auto pt-2 border-t border-slate-800 space-y-1.5">
-                    {charts.assetsBreakdown.map((a, i) => (
-                      <div key={a.category} className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between text-xs mb-0.5">
-                            <span className="text-slate-300">{a.category}</span>
-                            <span className="text-slate-100 font-medium">{formatCurrencyShort(a.value)}</span>
-                          </div>
-                          <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${Math.min(100, (a.value / (kpis.totalAssets || 1)) * 100)}%`,
-                                backgroundColor: '#22c55e',
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    <p className="text-slate-500 text-xs mt-2 pt-2 border-t border-slate-800">Total activos {formatCurrencyShort(kpis.totalAssets)}</p>
-                  </div>
-                </div>
-              ) : (
-                <EmptyChart />
-              )}
-            </ChartCard>
-
-            <ChartCard title="Pasivos" compact href="/dashboard/obligaciones">
-              {charts.liabilitiesBreakdown.length > 0 ? (
-                <div className="flex flex-col h-full min-h-0 gap-2">
-                  <div className="shrink-0" style={{ height: PIE_CHART_HEIGHT }}>
-                    <HighchartsReact highcharts={Highcharts} options={pieChartOptions} containerProps={{ style: { height: PIE_CHART_HEIGHT } }} />
-                  </div>
-                  <div className="flex-1 min-h-0 overflow-y-auto pt-2 border-t border-slate-800 space-y-1.5">
-                    {charts.liabilitiesBreakdown.map((l, i) => (
-                      <div key={l.category} className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between text-xs mb-0.5">
-                            <span className="text-slate-300">{l.category}</span>
-                            <span className="text-slate-100 font-medium">{formatCurrencyShort(l.balance)}</span>
-                          </div>
-                          <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${Math.min(100, (l.balance / (kpis.totalLiabilities || 1)) * 100)}%`,
-                                backgroundColor: '#f43f5e',
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    <p className="text-slate-500 text-xs mt-2 pt-2 border-t border-slate-800">Pasivos {formatCurrencyShort(kpis.totalLiabilities)}</p>
-                  </div>
-                </div>
-              ) : (
-                <EmptyChart />
-              )}
-            </ChartCard>
-
-            <ChartCard title="Flujo de Caja" compact href="/dashboard/ingresos">
-              {charts.cashflowTrend.length > 0 ? (
-                <div className="flex flex-col h-full min-h-0 gap-2">
-                  <div className="shrink-0" style={{ height: CHART_HEIGHT }}>
-                    <HighchartsReact highcharts={Highcharts} options={cashflowChartOptions} containerProps={{ style: { height: CHART_HEIGHT } }} />
-                  </div>
-                  <div className="flex-1 min-h-0 overflow-y-auto">
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 pt-1 border-t border-slate-800">
-                    {charts.liabilitiesBreakdown.slice(0, 4).map((l) => (
-                      <div key={l.category} className="flex justify-between text-xs">
-                        <span className="text-slate-400">{l.category}</span>
-                        <span className="text-slate-200">{formatCurrencyShort(l.balance)} · Pago {formatCurrencyShort(l.monthlyPayment)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <EmptyChart />
-              )}
-            </ChartCard>
-
-            <ChartCard title="Patrimonio" compact href="/dashboard">
-              {(kpis.totalAssets > 0 || kpis.totalLiabilities > 0) ? (
-                <div className="flex flex-col h-full min-h-0 gap-2">
-                  <div className="shrink-0" style={{ height: CHART_HEIGHT }}>
-                    <HighchartsReact highcharts={Highcharts} options={patrimonioBarOptions} containerProps={{ style: { height: CHART_HEIGHT } }} />
-                  </div>
-                  <div className="flex-1 min-h-0 flex items-end shrink-0">
-                    <p className="text-slate-500 text-xs pt-2 border-t border-slate-800 w-full">
-                      Patrimonio = Activos − Pasivos = <span className={kpis.netWorth >= 0 ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-semibold'}>{formatCurrency(kpis.netWorth)}</span>
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <EmptyChart />
-              )}
-            </ChartCard>
-            </section>
-          </div>
-        </div>
-        <EconomicTicker />
-      </main>
-    </div>
+    <DashboardOverview
+      kpis={{
+        latestBankBalance: kpis.latestBankBalance,
+        monthlyIncome: kpis.monthlyIncome,
+        monthlyExpenses: kpis.monthlyExpenses,
+        monthlyNetCashflow: kpis.monthlyNetCashflow,
+        netTrendPct: kpis.netTrendPct,
+        totalAssets: kpis.totalAssets,
+        totalLiabilities: kpis.totalLiabilities,
+        netWorth: kpis.netWorth,
+      }}
+      charts={{
+        assetsBreakdown: charts.assetsBreakdown,
+        liabilitiesBreakdown: charts.liabilitiesBreakdown,
+        cashflowTrend: charts.cashflowTrend,
+      }}
+      sparklineData={sparklineData}
+      assetsPieChartOptions={assetsPieChartOptions}
+      pieChartOptions={pieChartOptions}
+      cashflowChartOptions={cashflowChartOptions}
+      patrimonioBarOptions={patrimonioBarOptions}
+    />
   );
 }
 
@@ -781,7 +600,7 @@ function ChartCard({ title, children, compact, href, style, className }: { title
       <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
     </div>
   );
-  const wrapperClass = `block min-h-0 h-full overflow-hidden ${className ?? ''}`.trim();
+  const wrapperClass = `block min-h-0 h-full ${className ?? ''}`.trim();
   if (href) return <Link href={href} className={wrapperClass} style={style}>{card}</Link>;
   return <div className={wrapperClass} style={style}>{card}</div>;
 }

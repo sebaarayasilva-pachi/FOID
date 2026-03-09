@@ -8,6 +8,7 @@ gcloud auth login
 
 # 2. Configurar proyecto
 gcloud config set project foid-5e5e8
+# Imagen: us-east5-docker.pkg.dev/foid-5e5e8/cloud-run-source-deploy/foid-web
 
 # 3. Ejecutar deploy (usa cloudbuild.yaml)
 gcloud builds submit --config=cloudbuild.yaml .

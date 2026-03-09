@@ -17,7 +17,7 @@
     "@prisma/client": "^5.22.0",
     "highcharts": "^12.5.0",
     "highcharts-react-official": "^3.2.3",
-    "next": "14.2.18",
+    "next": "^14.2.21",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
