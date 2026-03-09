@@ -56,7 +56,7 @@ gcloud artifacts repositories create cloud-run-source-deploy \
 
 ### Crear secreto DATABASE_URL en Secret Manager
 
-**Formato para Cloud SQL Auth Proxy (TCP localhost:5432):**
+**Formato para Cloud SQL Auth Proxy (el contenedor usa cloud-sql-proxy → localhost:5432):**
 - `DATABASE_URL`: `postgresql://user:pass@localhost:5432/foid`
 - El contenedor usa Cloud SQL Auth Proxy que expone la DB en localhost:5432
 - `$` en contraseña → `%24`
@@ -156,7 +156,27 @@ FOID_TENANT_ID="g3"
 
 ---
 
-## 7. Migraciones
+## 7. Troubleshooting: "Error al cargar datos"
+
+Si la app arranca pero no conecta a la DB, verifica:
+
+1. **Cloud SQL Client** en la cuenta de servicio de Cloud Run (proyecto foid-487623):
+   ```bash
+   SA=$(gcloud run services describe foid-web --region=us-east5 --project=foid-5e5e8 --format='value(spec.template.spec.serviceAccountName)')
+   [ -z "$SA" ] && SA="$(gcloud projects describe foid-5e5e8 --format='value(projectNumber)')-compute@developer.gserviceaccount.com"
+   gcloud projects add-iam-policy-binding foid-487623 --member="serviceAccount:${SA}" --role="roles/cloudsql.client"
+   ```
+
+2. **Cloud SQL Admin API** habilitada en foid-5e5e8:
+   ```bash
+   gcloud services enable sqladmin.googleapis.com --project=foid-5e5e8
+   ```
+
+3. **Usuario y contraseña** correctos en Cloud SQL (foid_user, base de datos foid).
+
+---
+
+## 8. Migraciones
 
 Tras el primer deploy, las migraciones se ejecutan con `prisma migrate deploy` en el script de start.
 

@@ -36,7 +36,7 @@ steps:
       - '--add-cloudsql-instances'
       - 'foid-487623:southamerica-west1:foid-db'
       - '--set-env-vars'
-      - 'FOID_TENANT_ID=g3,DATABASE_URL=postgresql://foid_user:Charli01%24@localhost/foid?host=/cloudsql/foid-487623:southamerica-west1:foid-db&schema=public'
+      - 'FOID_TENANT_ID=g3,DATABASE_URL=postgresql://foid_user:Charli01%24@localhost:5432/foid'
       - '--timeout=600'
     id: 'deploy'
     waitFor: ['push']
