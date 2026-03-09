@@ -564,6 +564,10 @@ export function DashboardClient({ data }: { data: OverviewData }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-950">
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, background: 'red', color: 'white', padding: '8px 16px', fontSize: '14px', fontWeight: 'bold', textAlign: 'center' }}>
+        ✅ Build OK - {new Date().toISOString().slice(0, 19)}
+      </div>
+      <div style={{ height: 40 }} />
       <DashboardSidebar currentItemId="overview" />
 
       <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
