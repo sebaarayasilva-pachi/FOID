@@ -2,15 +2,16 @@
 
 import Link from 'next/link';
 
-export const DASHBOARD_MENU_ITEMS = [
-  { id: 'overview', label: 'Overview', href: '/dashboard', icon: 'home' },
-  { id: 'activos', label: 'Activos', href: '/dashboard/inversiones', icon: 'trendingUp' },
-  { id: 'inversiones', label: 'Inversiones', href: '/dashboard/inversiones', icon: 'list' },
-  { id: 'ingresos', label: 'Ingresos', href: '/dashboard/ingresos', icon: 'currency' },
-  { id: 'banco', label: 'Banco', href: '/dashboard/banco', icon: 'bank' },
-  { id: 'pasivos', label: 'Pasivos', href: '/dashboard/obligaciones', icon: 'chart' },
-  { id: 'arriendos', label: 'Arriendos', href: '/dashboard/arriendos', icon: 'building' },
-  { id: 'alertas', label: 'Alertas', href: '#', icon: 'bell' },
+const MENU_STRUCTURE = [
+  { id: 'overview', label: 'Overview', href: '/dashboard', icon: 'home', isHeader: false },
+  { id: 'activos', label: 'Activos', href: null, icon: 'trendingUp', isHeader: true },
+  { id: 'inversiones', label: 'Inversiones', href: '/dashboard/inversiones', icon: 'list', isHeader: false, parent: 'activos' },
+  { id: 'ingresos', label: 'Ingresos', href: '/dashboard/ingresos', icon: 'currency', isHeader: false, parent: 'activos' },
+  { id: 'arriendos', label: 'Arriendos', href: '/dashboard/arriendos', icon: 'building', isHeader: false, parent: 'activos' },
+  { id: 'banco', label: 'Banco', href: '/dashboard/banco', icon: 'bank', isHeader: false, parent: 'activos' },
+  { id: 'pasivos', label: 'Pasivos', href: null, icon: 'chart', isHeader: true },
+  { id: 'obligaciones', label: 'Obligaciones', href: '/dashboard/obligaciones', icon: 'chart', isHeader: false, parent: 'pasivos' },
+  { id: 'presupuesto', label: 'Presupuesto', href: '/dashboard/presupuesto', icon: 'wallet', isHeader: false },
 ] as const;
 
 export function NavIcon({ icon }: { icon: string }) {
@@ -70,6 +71,12 @@ export function NavIcon({ icon }: { icon: string }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
         </svg>
       );
+    case 'wallet':
+      return (
+        <svg width={size} height={size} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+      );
     default:
       return null;
   }
@@ -81,23 +88,38 @@ type DashboardSidebarProps = {
 
 export function DashboardSidebar({ currentItemId = 'overview' }: DashboardSidebarProps) {
   return (
-    <aside className="w-16 flex flex-col items-center py-3 bg-slate-900/80 border-r border-slate-800 shrink-0">
-      <h2 className="text-[10px] font-bold text-slate-400 mb-4 tracking-widest">FOID</h2>
-      <nav className="flex flex-col items-center gap-0.5">
-        {DASHBOARD_MENU_ITEMS.map((item, i) => (
-          <span key={item.id} className="contents">
-            {item.id === 'pasivos' && <div className="w-8 h-px bg-slate-700 my-1" aria-hidden />}
+    <aside className="w-48 flex flex-col py-3 bg-slate-900/80 border-r border-slate-800 shrink-0">
+      <h2 className="text-[10px] font-bold text-slate-400 mb-4 px-3 tracking-widest">FOID</h2>
+      <nav className="flex flex-col gap-0.5 px-2">
+        {MENU_STRUCTURE.map((item) => {
+          if (item.isHeader) {
+            return (
+              <div
+                key={item.id}
+                className="flex items-center gap-2 px-3 py-2 mt-2 first:mt-0 cursor-default"
+              >
+                <NavIcon icon={item.icon} />
+                <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">
+                  {item.label}
+                </span>
+              </div>
+            );
+          }
+          const isActive = item.id === currentItemId;
+          const href = item.href ?? '#';
+          return (
             <Link
-              href={item.href}
-              className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[10px] transition-colors ${
-                item.id === currentItemId ? 'bg-sky-500/20 text-sky-400' : 'text-slate-500 hover:bg-slate-800/80 hover:text-slate-300'
+              key={item.id}
+              href={href}
+              className={`flex items-center gap-2 px-3 py-1.5 pl-8 rounded-lg text-sm transition-colors ${
+                isActive ? 'bg-sky-500/20 text-sky-400' : 'text-slate-500 hover:bg-slate-800/80 hover:text-slate-300'
               }`}
             >
               <NavIcon icon={item.icon} />
               {item.label}
             </Link>
-          </span>
-        ))}
+          );
+        })}
       </nav>
     </aside>
   );

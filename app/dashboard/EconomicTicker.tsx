@@ -34,7 +34,7 @@ export function EconomicTicker() {
   }, []);
 
   const displayItems = items.length > 0 ? items : FALLBACK_ITEMS;
-  const duplicated = [...displayItems, ...displayItems];
+  const duplicated = [...displayItems, ...displayItems, ...displayItems, ...displayItems];
 
   return (
     <div className="shrink-0 h-8 min-h-8 bg-slate-900/95 border-t border-slate-800 overflow-hidden flex items-center">

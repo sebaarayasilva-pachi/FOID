@@ -101,7 +101,8 @@ type OverviewData = {
     bankTrendDaily?: { name: string; data: [number, number][]; color: string }[];
     assetsBreakdown: { category: string; value: number }[];
     liabilitiesBreakdown: { category: string; monthlyPayment: number; balance: number }[];
-    cashflowTrend: { month: string; income: number; expenses: number; net: number }[];
+    cashflowTrend: { month: string; income: number; expenses: number; net: number; budgetIncome?: number | null; budgetExpenses?: number | null; budgetNet?: number | null }[];
+    benchmarkNet?: number;
     rentals: { id: string; propertyName: string; monthlyRent: number; status: string }[];
   };
 };
@@ -322,6 +323,74 @@ export function DashboardClient({ data }: { data: OverviewData }) {
     series: investmentSeries,
   };
 
+  const hasBudget = charts.cashflowTrend.some((c) => c.budgetIncome != null || c.budgetExpenses != null);
+  const cashflowSeries: Highcharts.SeriesOptionsType[] = [
+    {
+      type: 'area',
+      name: 'Ingresos',
+      data: charts.cashflowTrend.map((c) => c.income),
+      color: '#22c55e',
+      fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, 'rgba(34,197,94,0.5)'], [1, 'rgba(34,197,94,0)']] },
+    },
+    {
+      type: 'area',
+      name: 'Egresos',
+      data: charts.cashflowTrend.map((c) => c.expenses),
+      color: '#f43f5e',
+      fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, 'rgba(244,63,94,0.5)'], [1, 'rgba(244,63,94,0)']] },
+    },
+    {
+      type: 'area',
+      name: 'Neto',
+      data: charts.cashflowTrend.map((c) => c.net),
+      color: '#14b8a6',
+      fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, 'rgba(20,184,166,0.5)'], [1, 'rgba(20,184,166,0)']] },
+      lineWidth: 2.5,
+    },
+  ];
+  if (hasBudget) {
+    cashflowSeries.push(
+      {
+        type: 'line',
+        name: 'Presup. Ingresos',
+        data: charts.cashflowTrend.map((c) => c.budgetIncome ?? null),
+        color: '#4ade80',
+        dashStyle: 'Dash',
+        lineWidth: 2,
+        marker: { enabled: false },
+      },
+      {
+        type: 'line',
+        name: 'Presup. Egresos',
+        data: charts.cashflowTrend.map((c) => c.budgetExpenses ?? null),
+        color: '#fb7185',
+        dashStyle: 'Dash',
+        lineWidth: 2,
+        marker: { enabled: false },
+      },
+      {
+        type: 'line',
+        name: 'Presup. Neto',
+        data: charts.cashflowTrend.map((c) => c.budgetNet ?? null),
+        color: '#2dd4bf',
+        dashStyle: 'Dash',
+        lineWidth: 2,
+        marker: { enabled: false },
+      }
+    );
+  }
+  if (charts.benchmarkNet != null && !isNaN(charts.benchmarkNet)) {
+    cashflowSeries.push({
+      type: 'line',
+      name: 'Benchmark (promedio)',
+      data: charts.cashflowTrend.map(() => charts.benchmarkNet!),
+      color: '#a78bfa',
+      dashStyle: 'ShortDot',
+      lineWidth: 2,
+      marker: { enabled: false },
+    });
+  }
+
   const cashflowChartOptions: Highcharts.Options = {
     ...DARK_THEME,
     chart: { ...DARK_THEME.chart, height: CHART_HEIGHT, type: 'area' },
@@ -341,10 +410,15 @@ export function DashboardClient({ data }: { data: OverviewData }) {
       formatter: function () {
         const idx = (this as { point?: { index?: number } }).point?.index ?? (this as { x?: number }).x ?? 0;
         const d = charts.cashflowTrend[idx];
-        return `<b>${formatMonth(d?.month ?? '')}</b><br/>Ingresos: ${formatCurrency(d?.income ?? 0)}<br/>Egresos: ${formatCurrency(d?.expenses ?? 0)}<br/>Neto: ${formatCurrency(d?.net ?? 0)}`;
+        let html = `<b>${formatMonth(d?.month ?? '')}</b><br/>Ingresos: ${formatCurrency(d?.income ?? 0)}<br/>Egresos: ${formatCurrency(d?.expenses ?? 0)}<br/>Neto: ${formatCurrency(d?.net ?? 0)}`;
+        if (d?.budgetIncome != null) html += `<br/><span style="color:#4ade80">Presup. Ingresos: ${formatCurrency(d.budgetIncome)}</span>`;
+        if (d?.budgetExpenses != null) html += `<br/><span style="color:#fb7185">Presup. Egresos: ${formatCurrency(d.budgetExpenses)}</span>`;
+        if (d?.budgetNet != null) html += `<br/><span style="color:#2dd4bf">Presup. Neto: ${formatCurrency(d.budgetNet)}</span>`;
+        if (charts.benchmarkNet != null) html += `<br/><span style="color:#a78bfa">Benchmark: ${formatCurrency(charts.benchmarkNet)}</span>`;
+        return html;
       },
     },
-    legend: { enabled: false },
+    legend: { enabled: hasBudget || charts.benchmarkNet != null, itemStyle: { fontSize: '10px' } },
     plotOptions: {
       area: {
         fillOpacity: 0.4,
@@ -352,30 +426,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
         lineWidth: 2,
       },
     },
-    series: [
-      {
-        type: 'area',
-        name: 'Ingresos',
-        data: charts.cashflowTrend.map((c) => c.income),
-        color: '#22c55e',
-        fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, 'rgba(34,197,94,0.5)'], [1, 'rgba(34,197,94,0)']] },
-      },
-      {
-        type: 'area',
-        name: 'Egresos',
-        data: charts.cashflowTrend.map((c) => c.expenses),
-        color: '#f43f5e',
-        fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, 'rgba(244,63,94,0.5)'], [1, 'rgba(244,63,94,0)']] },
-      },
-      {
-        type: 'area',
-        name: 'Neto',
-        data: charts.cashflowTrend.map((c) => c.net),
-        color: '#14b8a6',
-        fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, 'rgba(20,184,166,0.5)'], [1, 'rgba(20,184,166,0)']] },
-        lineWidth: 2.5,
-      },
-    ],
+    series: cashflowSeries,
   };
 
   const PIE_CHART_HEIGHT = 180;

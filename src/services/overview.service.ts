@@ -7,7 +7,7 @@ function toNum(d: Decimal | number | null | undefined): number {
 }
 
 export async function getOverview(tenantId: string) {
-  const [investments, liabilities, rentals, otherIncomes, bankBalances] = await Promise.all([
+  const [investments, liabilities, rentals, otherIncomes, bankBalances, budgets] = await Promise.all([
     prisma.investment.findMany({
       where: { tenantId },
       include: { movements: { orderBy: { fecha: 'asc' } } },
@@ -19,6 +19,7 @@ export async function getOverview(tenantId: string) {
       where: { tenantId },
       orderBy: { date: 'asc' },
     }),
+    prisma.budget.findMany({ where: { tenantId } }),
   ]);
 
   // Otros ingresos: monto mensual equivalente (se suma al flujo de caja)
@@ -217,16 +218,27 @@ export async function getOverview(tenantId: string) {
   // Flujo de caja: arriendos + inversiones + rescates + otros ingresos - cuotas pasivos (sin CashflowMonth)
   const baseIncome = monthlyRentIncome + investments.reduce((s, i) => s + toNum(i.monthlyIncome), 0) + otherIncomeMonthly;
   const baseExpenses = liabilities.reduce((s, l) => s + toNum(l.monthlyPayment), 0);
+  const budgetByMonth = Object.fromEntries(budgets.map((b) => [b.month, { income: toNum(b.budgetIncome), expenses: toNum(b.budgetExpenses) }]));
+
   const cashflowTrend = last12Months.map((monthStr) => {
     const rescates = rescatesByMonth[monthStr] ?? 0;
     const income = baseIncome + rescates;
+    const expenses = baseExpenses;
+    const net = income - expenses;
+    const budget = budgetByMonth[monthStr];
     return {
       month: monthStr,
       income,
-      expenses: baseExpenses,
-      net: income - baseExpenses,
+      expenses,
+      net,
+      budgetIncome: budget?.income ?? null,
+      budgetExpenses: budget?.expenses ?? null,
+      budgetNet: budget ? budget.income - budget.expenses : null,
     };
   });
+
+  const netValues = cashflowTrend.map((c) => c.net).filter((n) => !isNaN(n));
+  const benchmarkNet = netValues.length > 0 ? netValues.reduce((a, b) => a + b, 0) / netValues.length : 0;
 
   const rentalsList = rentals.map((r) => ({
     id: r.id,
@@ -271,6 +283,7 @@ export async function getOverview(tenantId: string) {
       assetsBreakdown,
       liabilitiesBreakdown,
       cashflowTrend,
+      benchmarkNet,
       rentals: rentalsList,
     },
   };

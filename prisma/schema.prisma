@@ -107,3 +107,17 @@ model BankBalance {
   @@unique([tenantId, date])
   @@index([tenantId])
 }
+
+model Budget {
+  id            String   @id @default(cuid())
+  tenantId      String
+
+  @@index([tenantId])
+  month         String   // YYYY-MM
+  budgetIncome  Decimal  // ingreso presupuestado
+  budgetExpenses Decimal // egreso presupuestado
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, month])
+}
