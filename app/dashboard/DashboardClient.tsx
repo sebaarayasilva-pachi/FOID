@@ -572,7 +572,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
           <span className="text-xs text-slate-500 shrink-0">Última actualización: Hoy</span>
         </header>
 
-        <div className="flex-1 min-h-0 p-4 flex flex-col gap-3 overflow-y-auto overflow-x-hidden">
+        <div className="flex-1 min-h-0 p-4 flex flex-col gap-3 overflow-hidden">
           <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0 items-stretch">
             <KpiCard
               title="Saldo Banco"
@@ -603,9 +603,11 @@ export function DashboardClient({ data }: { data: OverviewData }) {
             />
           </section>
 
-          <section className="flex-1 min-h-0 flex gap-3 overflow-hidden min-h-[320px]">
-            <div className="flex-1 min-w-0 flex flex-col gap-3 min-h-0">
-            <ChartCard title="Activos" compact href="/dashboard/inversiones" className="flex-1 min-h-0">
+          <section
+            className="flex-1 min-h-0 overflow-hidden min-h-[280px]"
+            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '0.75rem' }}
+          >
+            <ChartCard title="Activos" compact href="/dashboard/inversiones" style={{ gridRow: 1, gridColumn: 1, minHeight: 0 }}>
               {charts.assetsBreakdown.length > 0 ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
                   <div className="shrink-0" style={{ height: PIE_CHART_HEIGHT }}>
@@ -640,7 +642,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
               )}
             </ChartCard>
 
-            <ChartCard title="Pasivos" compact href="/dashboard/obligaciones" className="flex-1 min-h-0">
+            <ChartCard title="Pasivos" compact href="/dashboard/obligaciones" style={{ gridRow: 2, gridColumn: 1, minHeight: 0 }}>
               {charts.liabilitiesBreakdown.length > 0 ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
                   <div className="shrink-0" style={{ height: PIE_CHART_HEIGHT }}>
@@ -674,10 +676,8 @@ export function DashboardClient({ data }: { data: OverviewData }) {
                 <EmptyChart />
               )}
             </ChartCard>
-            </div>
 
-            <div className="flex-1 min-w-0 flex flex-col gap-3 min-h-0">
-            <ChartCard title="Flujo de Caja" compact href="/dashboard/ingresos" className="flex-1 min-h-0">
+            <ChartCard title="Flujo de Caja" compact href="/dashboard/ingresos" style={{ gridRow: 1, gridColumn: 2, minHeight: 0 }}>
               {charts.cashflowTrend.length > 0 ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
                   <div className="shrink-0" style={{ height: CHART_HEIGHT }}>
@@ -698,7 +698,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
               )}
             </ChartCard>
 
-            <ChartCard title="Patrimonio" compact href="/dashboard" className="flex-1 min-h-0">
+            <ChartCard title="Patrimonio" compact href="/dashboard" style={{ gridRow: 2, gridColumn: 2, minHeight: 0 }}>
               {(kpis.totalAssets > 0 || kpis.totalLiabilities > 0) ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
                   <div className="shrink-0" style={{ height: CHART_HEIGHT }}>
@@ -714,7 +714,6 @@ export function DashboardClient({ data }: { data: OverviewData }) {
                 <EmptyChart />
               )}
             </ChartCard>
-            </div>
           </section>
         </div>
         <EconomicTicker />
