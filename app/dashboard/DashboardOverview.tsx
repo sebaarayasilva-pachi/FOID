@@ -6,7 +6,6 @@ import { DashboardSidebar } from './DashboardSidebar';
 import { EconomicTicker } from './EconomicTicker';
 import HighchartsReact from 'highcharts-react-official';
 
-const CHART_HEIGHT = 200;
 const COLORS = ['#38bdf8', '#34d399', '#a78bfa', '#fbbf24', '#f472b6', '#2dd4bf'];
 
 function formatCurrency(n: number) {
@@ -33,8 +32,8 @@ function EmptyChart() {
 
 function ChartCard({ title, children, compact, href, className }: { title: string; children: React.ReactNode; compact?: boolean; href?: string; className?: string }) {
   const card = (
-    <div className={`bg-slate-900/60 rounded-lg border border-slate-800/80 shadow flex flex-col min-h-0 overflow-hidden h-full ${href ? 'cursor-pointer hover:border-slate-600' : ''} ${compact ? 'p-3' : 'p-6'}`}>
-      <h3 className={`font-semibold text-slate-200 shrink-0 ${compact ? 'text-sm mb-2' : 'text-sm mb-5'}`}>{title}</h3>
+    <div className={`bg-slate-900/60 rounded-lg border border-slate-800/80 shadow flex flex-col min-h-0 overflow-hidden h-full ${href ? 'cursor-pointer hover:border-slate-600' : ''} ${compact ? 'p-2' : 'p-6'}`}>
+      <h3 className={`font-semibold text-slate-200 shrink-0 ${compact ? 'text-xs mb-1' : 'text-sm mb-5'}`}>{title}</h3>
       <div className="flex-1 min-h-0 overflow-hidden relative">{children}</div>
     </div>
   );
@@ -87,18 +86,18 @@ export function DashboardOverview(props: DashboardOverviewProps) {
             <div className="min-w-0 min-h-0 overflow-hidden relative h-full" style={{ gridColumn: 1, gridRow: 1 }}>
               <ChartCard title="Activos" compact href="/dashboard/inversiones">
               {charts.assetsBreakdown.length > 0 ? (
-                <div className="absolute inset-0 flex flex-col gap-1">
-                  <div className="shrink-0 min-w-0" style={{ height: CHART_HEIGHT }}>
-                    <HighchartsReact highcharts={Highcharts} options={assetsPieChartOptions} containerProps={{ style: { height: CHART_HEIGHT, width: '100%', overflow: 'hidden' } }} />
+                <div className="absolute inset-0 flex flex-col min-w-0">
+                  <div className="flex-[4] min-h-[100px] max-h-[55%] w-full overflow-hidden">
+                    <HighchartsReact highcharts={Highcharts} options={assetsPieChartOptions} containerProps={{ style: { height: '100%', width: '100%', overflow: 'hidden' } }} />
                   </div>
-                  <div className="flex-1 min-h-0 overflow-y-auto pt-2 border-t border-slate-800">
+                  <div className="flex-[5] min-h-0 overflow-y-auto overflow-x-hidden pt-1.5 border-t border-slate-800 min-w-0">
                     {charts.assetsBreakdown.map((a, i) => (
-                      <div key={a.category} className="flex justify-between text-xs py-1">
-                        <span>{a.category}</span>
-                        <span>{formatCurrencyShort(a.value)}</span>
+                      <div key={`${a.category}-${i}`} className="flex justify-between items-center gap-2 text-xs py-0.5 min-w-0">
+                        <span className="truncate">{a.category}</span>
+                        <span className="shrink-0 tabular-nums">{formatCurrencyShort(a.value)}</span>
                       </div>
                     ))}
-                    <p className="text-slate-500 text-xs pt-2">Total {formatCurrencyShort(kpis.totalAssets)}</p>
+                    <p className="text-slate-500 text-xs pt-1">Total {formatCurrencyShort(kpis.totalAssets)}</p>
                   </div>
                 </div>
               ) : (
@@ -109,9 +108,9 @@ export function DashboardOverview(props: DashboardOverviewProps) {
             <div className="min-w-0 min-h-0 overflow-hidden relative h-full" style={{ gridColumn: 2, gridRow: 1 }}>
               <ChartCard title="Flujo de Caja" compact href="/dashboard/ingresos">
               {charts.cashflowTrend.length > 0 ? (
-                <div className="absolute inset-0 flex flex-col">
-                  <div className="shrink-0 min-w-0" style={{ height: CHART_HEIGHT }}>
-                    <HighchartsReact highcharts={Highcharts} options={cashflowChartOptions} containerProps={{ style: { height: CHART_HEIGHT, width: '100%', overflow: 'hidden' } }} />
+                <div className="absolute inset-0 flex flex-col min-w-0">
+                  <div className="flex-1 min-h-[100px] w-full overflow-hidden">
+                    <HighchartsReact highcharts={Highcharts} options={cashflowChartOptions} containerProps={{ style: { height: '100%', width: '100%', overflow: 'hidden' } }} />
                   </div>
                 </div>
               ) : (
@@ -122,18 +121,18 @@ export function DashboardOverview(props: DashboardOverviewProps) {
             <div className="min-w-0 min-h-0 overflow-hidden relative h-full" style={{ gridColumn: 1, gridRow: 2 }}>
               <ChartCard title="Pasivos" compact href="/dashboard/obligaciones">
               {charts.liabilitiesBreakdown.length > 0 ? (
-                <div className="absolute inset-0 flex flex-col gap-1">
-                  <div className="shrink-0 min-w-0" style={{ height: CHART_HEIGHT }}>
-                    <HighchartsReact highcharts={Highcharts} options={pieChartOptions} containerProps={{ style: { height: CHART_HEIGHT, width: '100%', overflow: 'hidden' } }} />
+                <div className="absolute inset-0 flex flex-col min-w-0">
+                  <div className="flex-[4] min-h-[100px] max-h-[55%] w-full overflow-hidden">
+                    <HighchartsReact highcharts={Highcharts} options={pieChartOptions} containerProps={{ style: { height: '100%', width: '100%', overflow: 'hidden' } }} />
                   </div>
-                  <div className="flex-1 min-h-0 overflow-y-auto pt-2 border-t border-slate-800">
-                    {charts.liabilitiesBreakdown.map((l) => (
-                      <div key={l.category} className="flex justify-between text-xs py-1">
-                        <span>{l.category}</span>
-                        <span>{formatCurrencyShort(l.balance)}</span>
+                  <div className="flex-[5] min-h-0 overflow-y-auto overflow-x-hidden pt-1.5 border-t border-slate-800 min-w-0">
+                    {charts.liabilitiesBreakdown.map((l, i) => (
+                      <div key={`${l.category}-${i}`} className="flex justify-between items-center gap-2 text-xs py-0.5 min-w-0">
+                        <span className="truncate">{l.category}</span>
+                        <span className="shrink-0 tabular-nums">{formatCurrencyShort(l.balance)}</span>
                       </div>
                     ))}
-                    <p className="text-slate-500 text-xs pt-2">Total {formatCurrencyShort(kpis.totalLiabilities)}</p>
+                    <p className="text-slate-500 text-xs pt-1">Total {formatCurrencyShort(kpis.totalLiabilities)}</p>
                   </div>
                 </div>
               ) : (
@@ -144,9 +143,9 @@ export function DashboardOverview(props: DashboardOverviewProps) {
             <div className="min-w-0 min-h-0 overflow-hidden relative h-full" style={{ gridColumn: 2, gridRow: 2 }}>
               <ChartCard title="Patrimonio" compact href="/dashboard">
               {(kpis.totalAssets > 0 || kpis.totalLiabilities > 0) ? (
-                <div className="absolute inset-0 flex flex-col">
-                  <div className="shrink-0 min-w-0" style={{ height: CHART_HEIGHT }}>
-                    <HighchartsReact highcharts={Highcharts} options={patrimonioBarOptions} containerProps={{ style: { height: CHART_HEIGHT, width: '100%', overflow: 'hidden' } }} />
+                <div className="absolute inset-0 flex flex-col min-w-0">
+                  <div className="flex-1 min-h-[100px] w-full overflow-hidden">
+                    <HighchartsReact highcharts={Highcharts} options={patrimonioBarOptions} containerProps={{ style: { height: '100%', width: '100%', overflow: 'hidden' } }} />
                   </div>
                   <p className="text-slate-500 text-xs pt-1 shrink-0">Patrimonio = {formatCurrency(kpis.netWorth)}</p>
                 </div>
