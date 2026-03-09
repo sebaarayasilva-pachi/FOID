@@ -516,7 +516,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
           <span className="text-xs text-slate-500 shrink-0">Última actualización: Hoy</span>
         </header>
 
-        <div className="flex-1 min-h-0 p-4 flex flex-col gap-3 overflow-hidden">
+        <div className="flex-1 min-h-0 p-4 flex flex-col gap-3 overflow-y-auto overflow-x-hidden">
           <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 shrink-0">
             <KpiCard
               title="Total Inversiones"

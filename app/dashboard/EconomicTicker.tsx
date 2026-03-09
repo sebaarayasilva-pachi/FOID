@@ -9,8 +9,18 @@ type IndicatorItem = {
   unit?: string;
 };
 
+const FALLBACK_ITEMS: IndicatorItem[] = [
+  { id: 'uf', label: 'UF', value: '—' },
+  { id: 'dolar', label: 'Dólar', value: '—' },
+  { id: 'euro', label: 'Euro', value: '—' },
+  { id: 'tpm', label: 'TPM', value: '—' },
+  { id: 'cobre', label: 'Cobre', value: '—', unit: 'USD/lb' },
+  { id: 'ipc', label: 'IPC', value: '—' },
+  { id: 'btc', label: 'Bitcoin', value: '—' },
+];
+
 export function EconomicTicker() {
-  const [items, setItems] = useState<IndicatorItem[]>([]);
+  const [items, setItems] = useState<IndicatorItem[]>(FALLBACK_ITEMS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,18 +29,17 @@ export function EconomicTicker() {
       .then((data) => {
         if (data.items?.length) setItems(data.items);
       })
-      .catch(() => setItems([]))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading || items.length === 0) return null;
-
-  const duplicated = [...items, ...items];
+  const displayItems = items.length > 0 ? items : FALLBACK_ITEMS;
+  const duplicated = [...displayItems, ...displayItems];
 
   return (
-    <div className="shrink-0 h-8 bg-slate-900/95 border-t border-slate-800 overflow-hidden flex items-center">
+    <div className="shrink-0 h-8 min-h-8 bg-slate-900/95 border-t border-slate-800 overflow-hidden flex items-center">
       <div className="flex-1 overflow-hidden">
-        <div className="flex items-center gap-8 py-1 animate-ticker-scroll w-max">
+        <div className={`flex items-center gap-8 py-1 w-max ${!loading && items.length > 0 ? 'animate-ticker-scroll' : ''}`}>
           {duplicated.map((item, i) => (
             <div
               key={`${item.id}-${i}`}
