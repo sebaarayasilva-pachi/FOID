@@ -73,6 +73,8 @@ type OverviewData = {
     totalInvestments: number;
     totalLiabilities: number;
     latestBankBalance: number;
+    totalAssets: number;
+    netWorth: number;
     monthlyRentIncome: number;
     monthlyIncome: number;
     monthlyExpenses: number;
@@ -95,6 +97,7 @@ type OverviewData = {
     investmentTrend?: Record<string, string | number>[];
     investmentTrendDaily?: { name: string; data: [number, number][]; color: string }[];
     bankTrendDaily?: { name: string; data: [number, number][]; color: string }[];
+    assetsBreakdown: { category: string; value: number }[];
     liabilitiesBreakdown: { category: string; monthlyPayment: number; balance: number }[];
     cashflowTrend: { month: string; income: number; expenses: number; net: number }[];
     rentals: { id: string; propertyName: string; monthlyRent: number; status: string }[];
@@ -464,6 +467,68 @@ export function DashboardClient({ data }: { data: OverviewData }) {
     }],
   };
 
+  const assetsPieChartOptions: Highcharts.Options = {
+    ...DARK_THEME,
+    chart: { ...DARK_THEME.chart, height: PIE_CHART_HEIGHT, type: 'pie' },
+    title: { text: undefined },
+    tooltip: {
+      ...DARK_THEME.tooltip,
+      pointFormatter: function () { return `<span style="color:${this.color}">●</span> ${this.name}: <b>${formatCurrency(Number(this.y))}</b>`; },
+    },
+    legend: { enabled: false },
+    plotOptions: {
+      pie: {
+        innerSize: '60%',
+        dataLabels: { enabled: false },
+        colors: COLORS,
+      },
+    },
+    series: [{
+      type: 'pie',
+      name: 'Activos',
+      data: charts.assetsBreakdown.map((a, i) => ({ name: a.category, y: a.value, color: COLORS[i % COLORS.length] })),
+    }],
+  };
+
+  const patrimonioBarOptions: Highcharts.Options = {
+    ...DARK_THEME,
+    chart: { ...DARK_THEME.chart, height: CHART_HEIGHT, type: 'bar' },
+    title: { text: undefined },
+    xAxis: {
+      ...DARK_THEME.xAxis,
+      categories: ['Activos', 'Pasivos', 'Patrimonio'],
+    },
+    yAxis: {
+      ...DARK_THEME.yAxis,
+      title: { text: undefined },
+      labels: { formatter: function () { return formatCurrencyShort(Number(this.value)); } },
+    },
+    tooltip: {
+      ...DARK_THEME.tooltip,
+      pointFormatter: function () { return `<span style="color:${this.color}">●</span> ${this.x}: <b>${formatCurrency(Number(this.y ?? 0))}</b>`; },
+    },
+    legend: { enabled: false },
+    plotOptions: {
+      bar: {
+        borderRadius: 4,
+        dataLabels: {
+          enabled: true,
+          formatter: function () { return formatCurrencyShort(Number(this.y ?? 0)); },
+          style: { color: '#e2e8f0', fontSize: '10px', textOutline: 'none' },
+        },
+      },
+    },
+    series: [{
+      type: 'bar',
+      name: 'Monto',
+      data: [
+        { y: kpis.totalAssets, color: '#22c55e' },
+        { y: kpis.totalLiabilities, color: '#f43f5e' },
+        { y: kpis.netWorth, color: kpis.netWorth >= 0 ? '#14b8a6' : '#f43f5e' },
+      ],
+    }],
+  };
+
   const areaChartOptions: Highcharts.Options = {
     ...DARK_THEME,
     chart: { ...DARK_THEME.chart, height: CHART_HEIGHT, type: 'area' },
@@ -674,6 +739,56 @@ export function DashboardClient({ data }: { data: OverviewData }) {
                           ))}
                       </ul>
                     )}
+                  </div>
+                </div>
+              ) : (
+                <EmptyChart />
+              )}
+            </ChartCard>
+
+            <ChartCard title="Activos" compact>
+              {charts.assetsBreakdown.length > 0 ? (
+                <div className="flex flex-col min-h-0 gap-2">
+                  <div className="shrink-0">
+                    <HighchartsReact highcharts={Highcharts} options={assetsPieChartOptions} containerProps={{ style: { height: PIE_CHART_HEIGHT } }} />
+                  </div>
+                  <div className="shrink-0 pt-2 border-t border-slate-800 space-y-1.5">
+                    {charts.assetsBreakdown.map((a, i) => (
+                      <div key={a.category} className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between text-xs mb-0.5">
+                            <span className="text-slate-300">{a.category}</span>
+                            <span className="text-slate-100 font-medium">{formatCurrencyShort(a.value)}</span>
+                          </div>
+                          <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${Math.min(100, (a.value / (kpis.totalAssets || 1)) * 100)}%`,
+                                backgroundColor: '#22c55e',
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <p className="text-slate-500 text-xs mt-2 pt-2 border-t border-slate-800">Total activos {formatCurrencyShort(kpis.totalAssets)}</p>
+                  </div>
+                </div>
+              ) : (
+                <EmptyChart />
+              )}
+            </ChartCard>
+
+            <ChartCard title="Patrimonio" compact>
+              {(kpis.totalAssets > 0 || kpis.totalLiabilities > 0) ? (
+                <div className="space-y-1 min-h-0 flex flex-col">
+                  <HighchartsReact highcharts={Highcharts} options={patrimonioBarOptions} containerProps={{ style: { height: CHART_HEIGHT } }} />
+                  <div className="pt-2 border-t border-slate-800 shrink-0">
+                    <p className="text-slate-500 text-xs">
+                      Patrimonio = Activos − Pasivos = <span className={kpis.netWorth >= 0 ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-semibold'}>{formatCurrency(kpis.netWorth)}</span>
+                    </p>
                   </div>
                 </div>
               ) : (

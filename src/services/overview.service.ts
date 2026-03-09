@@ -98,6 +98,13 @@ export async function getOverview(tenantId: string) {
     balance: toNum(l.balance ?? 0),
   }));
 
+  const totalAssets = totalInvestments + latestBankBalance;
+  const netWorth = totalAssets - totalLiabilities;
+  const assetsBreakdown = [
+    ...investmentAllocation,
+    ...(latestBankBalance > 0 ? [{ category: 'Banco', value: latestBankBalance }] : []),
+  ];
+
   // Serie temporal: variación del saldo en función del tiempo (últimos 12 meses)
   const now = new Date();
   const last12Months: string[] = [];
@@ -243,6 +250,8 @@ export async function getOverview(tenantId: string) {
       totalInvestments,
       totalLiabilities,
       latestBankBalance,
+      totalAssets,
+      netWorth,
       monthlyRentIncome,
       monthlyIncome,
       monthlyExpenses,
@@ -259,6 +268,7 @@ export async function getOverview(tenantId: string) {
       investmentTrend,
       investmentTrendDaily,
       bankTrendDaily,
+      assetsBreakdown,
       liabilitiesBreakdown,
       cashflowTrend,
       rentals: rentalsList,
