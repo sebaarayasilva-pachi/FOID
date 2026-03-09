@@ -1,0 +1,30 @@
+# Deploy automático a Cloud Run en cada push a main
+#
+# Configurar en GitHub: Settings → Secrets and variables → Actions
+# - GCP_SA_KEY: JSON de Service Account (Cloud Build + Cloud Run + Artifact Registry)
+# - GCP_PROJECT_ID: ID del proyecto (ej: foid-5e5e8)
+#
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy via Cloud Build
+        run: gcloud builds submit --config=cloudbuild.yaml .
+        env:
+          CLOUDSDK_CORE_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
