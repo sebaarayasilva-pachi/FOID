@@ -573,7 +573,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
         </header>
 
         <div className="flex-1 min-h-0 p-4 flex flex-col gap-3 overflow-y-auto overflow-x-hidden">
-          <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
+          <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0 items-stretch">
             <KpiCard
               title="Saldo Banco"
               value={formatCurrencyShort(kpis.latestBankBalance)}
@@ -603,14 +603,14 @@ export function DashboardClient({ data }: { data: OverviewData }) {
             />
           </section>
 
-          <section className="flex-1 min-h-0 grid gap-3 overflow-hidden min-h-[400px]" style={{ gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gridTemplateAreas: '"activos flujo" "pasivos patrimonio"' }}>
+          <section className="flex-1 min-h-0 grid gap-3 overflow-hidden min-h-[400px] items-stretch" style={{ gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gridTemplateAreas: '"activos flujo" "pasivos patrimonio"' }}>
             <ChartCard title="Activos" compact href="/dashboard/inversiones" style={{ gridArea: 'activos' }}>
               {charts.assetsBreakdown.length > 0 ? (
                 <div className="flex flex-col min-h-0 gap-2">
-                  <div className="shrink-0">
+                  <div className="shrink-0" style={{ height: PIE_CHART_HEIGHT }}>
                     <HighchartsReact highcharts={Highcharts} options={assetsPieChartOptions} containerProps={{ style: { height: PIE_CHART_HEIGHT } }} />
                   </div>
-                  <div className="shrink-0 pt-2 border-t border-slate-800 space-y-1.5">
+                  <div className="flex-1 min-h-0 overflow-y-auto pt-2 border-t border-slate-800 space-y-1.5">
                     {charts.assetsBreakdown.map((a, i) => (
                       <div key={a.category} className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
@@ -642,8 +642,11 @@ export function DashboardClient({ data }: { data: OverviewData }) {
             <ChartCard title="Flujo de Caja" compact href="/dashboard/ingresos" style={{ gridArea: 'flujo' }}>
               {charts.cashflowTrend.length > 0 ? (
                 <div className="space-y-1 min-h-0 flex flex-col">
-                  <HighchartsReact highcharts={Highcharts} options={cashflowChartOptions} containerProps={{ style: { height: CHART_HEIGHT } }} />
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 pt-1 border-t border-slate-800 shrink-0">
+                  <div className="shrink-0" style={{ height: CHART_HEIGHT }}>
+                    <HighchartsReact highcharts={Highcharts} options={cashflowChartOptions} containerProps={{ style: { height: CHART_HEIGHT } }} />
+                  </div>
+                  <div className="flex-1 min-h-0 overflow-y-auto">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 pt-1 border-t border-slate-800">
                     {charts.liabilitiesBreakdown.slice(0, 4).map((l) => (
                       <div key={l.category} className="flex justify-between text-xs">
                         <span className="text-slate-400">{l.category}</span>
@@ -660,10 +663,10 @@ export function DashboardClient({ data }: { data: OverviewData }) {
             <ChartCard title="Pasivos" compact href="/dashboard/obligaciones" style={{ gridArea: 'pasivos' }}>
               {charts.liabilitiesBreakdown.length > 0 ? (
                 <div className="flex flex-col min-h-0 gap-2">
-                  <div className="shrink-0">
+                  <div className="shrink-0" style={{ height: PIE_CHART_HEIGHT }}>
                     <HighchartsReact highcharts={Highcharts} options={pieChartOptions} containerProps={{ style: { height: PIE_CHART_HEIGHT } }} />
                   </div>
-                  <div className="shrink-0 pt-2 border-t border-slate-800 space-y-1.5">
+                  <div className="flex-1 min-h-0 overflow-y-auto pt-2 border-t border-slate-800 space-y-1.5">
                     {charts.liabilitiesBreakdown.map((l, i) => (
                       <div key={l.category} className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
@@ -695,11 +698,15 @@ export function DashboardClient({ data }: { data: OverviewData }) {
             <ChartCard title="Patrimonio" compact href="/dashboard" style={{ gridArea: 'patrimonio' }}>
               {(kpis.totalAssets > 0 || kpis.totalLiabilities > 0) ? (
                 <div className="space-y-1 min-h-0 flex flex-col">
-                  <HighchartsReact highcharts={Highcharts} options={patrimonioBarOptions} containerProps={{ style: { height: CHART_HEIGHT } }} />
-                  <div className="pt-2 border-t border-slate-800 shrink-0">
+                  <div className="shrink-0" style={{ height: CHART_HEIGHT }}>
+                    <HighchartsReact highcharts={Highcharts} options={patrimonioBarOptions} containerProps={{ style: { height: CHART_HEIGHT } }} />
+                  </div>
+                  <div className="flex-1 min-h-0 flex items-end">
+                    <div className="pt-2 border-t border-slate-800 w-full shrink-0">
                     <p className="text-slate-500 text-xs">
                       Patrimonio = Activos − Pasivos = <span className={kpis.netWorth >= 0 ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-semibold'}>{formatCurrency(kpis.netWorth)}</span>
                     </p>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -736,8 +743,8 @@ function KpiCard({
   const isPositive = highlight ?? positive ?? true;
   const color = isPositive ? 'text-emerald-400' : 'text-rose-400';
   return (
-    <div className="bg-slate-900/60 rounded-lg p-3 border border-slate-800/80 shadow">
-      <div className="flex items-start justify-between">
+    <div className="h-full flex flex-col bg-slate-900/60 rounded-lg p-3 border border-slate-800/80 shadow">
+      <div className="flex items-start justify-between shrink-0">
         <div>
           <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">{title}</p>
           <p className={`text-lg font-bold tabular-nums ${color}`}>{value}</p>
@@ -753,7 +760,9 @@ function KpiCard({
           </div>
         )}
       </div>
-      {sparkline && sparkline.length > 0 && <Sparkline data={sparkline} positive={isPositive} />}
+      <div className="mt-1 min-h-[18px] shrink-0">
+        {sparkline && sparkline.length > 0 && <Sparkline data={sparkline} positive={isPositive} />}
+      </div>
     </div>
   );
 }
