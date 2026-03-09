@@ -572,8 +572,8 @@ export function DashboardClient({ data }: { data: OverviewData }) {
           <span className="text-xs text-slate-500 shrink-0">Última actualización: Hoy</span>
         </header>
 
-        <div className="flex-1 min-h-0 p-4 flex flex-col gap-3 overflow-hidden border-4 border-cyan-500">
-          <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0 items-stretch border-4 border-amber-500">
+        <div className="flex-1 min-h-0 p-4 flex flex-col gap-3 overflow-hidden">
+          <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0 items-stretch">
             <KpiCard
               title="Saldo Banco"
               value={formatCurrencyShort(kpis.latestBankBalance)}
@@ -603,8 +603,11 @@ export function DashboardClient({ data }: { data: OverviewData }) {
             />
           </section>
 
-          <div className="flex-1 min-h-0 overflow-hidden flex flex-col border-4 border-emerald-500">
-            <section className="grid grid-cols-2 gap-3 flex-1 min-h-0 border-4 border-rose-500" style={{ gridTemplateRows: 'minmax(0, 1fr) minmax(0, 1fr)' }}>
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+            <section
+              className="grid grid-cols-2 gap-3 flex-1 min-h-0"
+              style={{ gridTemplateRows: 'minmax(0, 1fr) minmax(0, 1fr)' }}
+            >
             <ChartCard title="Activos" compact href="/dashboard/inversiones">
               {charts.assetsBreakdown.length > 0 ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
@@ -769,7 +772,7 @@ function KpiCard({
 
 function ChartCard({ title, children, compact, href, style, className }: { title: string; children: React.ReactNode; compact?: boolean; href?: string; style?: React.CSSProperties; className?: string }) {
   const card = (
-    <div className={`bg-slate-900/60 rounded-lg border-4 border-violet-500 shadow flex flex-col min-h-0 overflow-hidden transition-colors ${href ? 'cursor-pointer hover:border-slate-600 hover:bg-slate-900/80' : ''} ${compact ? 'p-3' : 'p-6'}`}>
+    <div className={`bg-slate-900/60 rounded-lg border border-slate-800/80 shadow flex flex-col min-h-0 overflow-hidden transition-colors ${href ? 'cursor-pointer hover:border-slate-600 hover:bg-slate-900/80' : ''} ${compact ? 'p-3' : 'p-6'}`}>
       <h3 className={`font-semibold text-slate-200 shrink-0 ${compact ? 'text-xs mb-2' : 'text-sm mb-5'}`}>{title}</h3>
       <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
     </div>
