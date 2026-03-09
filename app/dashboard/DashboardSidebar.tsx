@@ -11,7 +11,7 @@ const MENU_STRUCTURE = [
   { id: 'banco', label: 'Banco', href: '/dashboard/banco', icon: 'bank', isHeader: false, parent: 'activos' },
   { id: 'pasivos', label: 'Pasivos', href: null, icon: 'chart', isHeader: true },
   { id: 'obligaciones', label: 'Obligaciones', href: '/dashboard/obligaciones', icon: 'chart', isHeader: false, parent: 'pasivos' },
-  { id: 'presupuesto', label: 'Presupuesto', href: '/dashboard/presupuesto', icon: 'wallet', isHeader: false },
+  { id: 'presupuesto', label: 'Presupuesto', href: '/dashboard/presupuesto', icon: 'wallet', isHeader: true, isHeaderClickable: true },
 ] as const;
 
 export function NavIcon({ icon }: { icon: string }) {
@@ -93,15 +93,31 @@ export function DashboardSidebar({ currentItemId = 'overview' }: DashboardSideba
       <nav className="flex flex-col gap-0.5 px-2">
         {MENU_STRUCTURE.map((item) => {
           if (item.isHeader) {
+            const headerContent = (
+              <>
+                <NavIcon icon={item.icon} />
+                <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">
+                  {item.label}
+                </span>
+              </>
+            );
+            if ('isHeaderClickable' in item && item.isHeaderClickable && item.href) {
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className="flex items-center gap-2 px-3 py-2 mt-2 first:mt-0 rounded-lg hover:bg-slate-800/80 transition-colors"
+                >
+                  {headerContent}
+                </Link>
+              );
+            }
             return (
               <div
                 key={item.id}
                 className="flex items-center gap-2 px-3 py-2 mt-2 first:mt-0 cursor-default"
               >
-                <NavIcon icon={item.icon} />
-                <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">
-                  {item.label}
-                </span>
+                {headerContent}
               </div>
             );
           }

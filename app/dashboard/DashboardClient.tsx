@@ -7,7 +7,8 @@ import { EconomicTicker } from './EconomicTicker';
 import HighchartsReact from 'highcharts-react-official';
 
 const COLORS = ['#38bdf8', '#34d399', '#a78bfa', '#fbbf24', '#f472b6', '#2dd4bf'];
-const CHART_HEIGHT = 220;
+const CHART_HEIGHT = 200;
+const CHART_BOX_HEIGHT = 200;
 const INVESTMENT_CHART_HEIGHT = 340;
 
 const DARK_THEME = {
@@ -393,7 +394,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
 
   const cashflowChartOptions: Highcharts.Options = {
     ...DARK_THEME,
-    chart: { ...DARK_THEME.chart, height: CHART_HEIGHT, type: 'area' },
+    chart: { ...DARK_THEME.chart, height: CHART_BOX_HEIGHT, type: 'area' },
     title: { text: undefined },
     xAxis: {
       ...DARK_THEME.xAxis,
@@ -429,7 +430,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
     series: cashflowSeries,
   };
 
-  const PIE_CHART_HEIGHT = 180;
+  const PIE_CHART_HEIGHT = CHART_BOX_HEIGHT;
   const pieChartOptions: Highcharts.Options = {
     ...DARK_THEME,
     chart: { ...DARK_THEME.chart, height: PIE_CHART_HEIGHT, type: 'pie' },
@@ -478,7 +479,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
 
   const patrimonioBarOptions: Highcharts.Options = {
     ...DARK_THEME,
-    chart: { ...DARK_THEME.chart, height: CHART_HEIGHT, type: 'bar' },
+    chart: { ...DARK_THEME.chart, height: CHART_BOX_HEIGHT, type: 'bar' },
     title: { text: undefined },
     xAxis: {
       ...DARK_THEME.xAxis,
@@ -488,10 +489,14 @@ export function DashboardClient({ data }: { data: OverviewData }) {
       ...DARK_THEME.yAxis,
       title: { text: undefined },
       labels: { formatter: function () { return formatCurrencyShort(Number(this.value)); } },
+      plotLines: [{ value: 0, width: 1, color: '#475569', zIndex: 2 }],
     },
     tooltip: {
       ...DARK_THEME.tooltip,
-      pointFormatter: function () { return `<span style="color:${this.color}">●</span> ${this.x}: <b>${formatCurrency(Number(this.y ?? 0))}</b>`; },
+      pointFormatter: function () {
+        const val = Number(this.y ?? 0);
+        return `<span style="color:${this.color}">●</span> ${this.x}: <b>${formatCurrency(val)}</b>`;
+      },
     },
     legend: { enabled: false },
     plotOptions: {
@@ -509,7 +514,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
       name: 'Monto',
       data: [
         { y: kpis.totalAssets, color: '#22c55e' },
-        { y: kpis.totalLiabilities, color: '#f43f5e' },
+        { y: -kpis.totalLiabilities, color: '#f43f5e' },
         { y: kpis.netWorth, color: kpis.netWorth >= 0 ? '#14b8a6' : '#f43f5e' },
       ],
     }],
@@ -517,7 +522,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
 
   const areaChartOptions: Highcharts.Options = {
     ...DARK_THEME,
-    chart: { ...DARK_THEME.chart, height: CHART_HEIGHT, type: 'area' },
+    chart: { ...DARK_THEME.chart, height: CHART_BOX_HEIGHT, type: 'area' },
     title: { text: undefined },
     xAxis: {
       ...DARK_THEME.xAxis,
@@ -568,15 +573,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
         </header>
 
         <div className="flex-1 min-h-0 p-4 flex flex-col gap-3 overflow-y-auto overflow-x-hidden">
-          <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 shrink-0">
-            <KpiCard
-              title="Total Inversiones"
-              value={formatCurrencyShort(kpis.totalInvestments)}
-              fullValue={formatCurrency(kpis.totalInvestments)}
-              trend={charts.investmentReturns.length ? (charts.investmentReturns[0]?.returnPct ?? 0) * 100 : undefined}
-              sparkline={sparklineData?.income}
-              positive
-            />
+          <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
             <KpiCard
               title="Saldo Banco"
               value={formatCurrencyShort(kpis.latestBankBalance)}
@@ -584,18 +581,17 @@ export function DashboardClient({ data }: { data: OverviewData }) {
               positive
             />
             <KpiCard
-              title="Total Pasivos"
-              value={formatCurrencyShort(kpis.totalLiabilities)}
-              fullValue={formatCurrency(kpis.totalLiabilities)}
-              positive={false}
-            />
-            <KpiCard
-              title="Ingreso Arriendos"
-              value={`${formatCurrencyShort(kpis.monthlyRentIncome)} / mes`}
-              fullValue={formatCurrency(kpis.monthlyRentIncome)}
+              title="Ingresos"
+              value={`${formatCurrencyShort(kpis.monthlyIncome)} / mes`}
+              fullValue={formatCurrency(kpis.monthlyIncome)}
               sparkline={sparklineData?.income}
               positive
-              icon="building"
+            />
+            <KpiCard
+              title="Egresos"
+              value={`${formatCurrencyShort(kpis.monthlyExpenses)} / mes`}
+              fullValue={formatCurrency(kpis.monthlyExpenses)}
+              positive={false}
             />
             <KpiCard
               title="Flujo Neto"
@@ -607,7 +603,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
             />
           </section>
 
-          <section className="flex-1 min-h-0 grid gap-3 overflow-hidden" style={{ gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gridTemplateAreas: '"activos flujo" "pasivos patrimonio"' }}>
+          <section className="flex-1 min-h-0 grid gap-3 overflow-hidden min-h-[400px]" style={{ gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gridTemplateAreas: '"activos flujo" "pasivos patrimonio"' }}>
             <ChartCard title="Activos" compact href="/dashboard/inversiones" style={{ gridArea: 'activos' }}>
               {charts.assetsBreakdown.length > 0 ? (
                 <div className="flex flex-col min-h-0 gap-2">
@@ -769,13 +765,13 @@ function ChartCard({ title, children, compact, href, style }: { title: string; c
       <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
     </div>
   );
-  if (href) return <Link href={href} className="block min-h-0" style={style}>{card}</Link>;
-  return <div className="min-h-0" style={style}>{card}</div>;
+  if (href) return <Link href={href} className="block min-h-0 h-full" style={style}>{card}</Link>;
+  return <div className="min-h-0 h-full" style={style}>{card}</div>;
 }
 
 function EmptyChart() {
   return (
-    <div className="flex flex-col items-center justify-center text-slate-500 text-xs gap-1" style={{ height: CHART_HEIGHT }}>
+    <div className="flex flex-col items-center justify-center text-slate-500 text-xs gap-1" style={{ height: CHART_BOX_HEIGHT }}>
       <svg className="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>
