@@ -32,15 +32,16 @@ function EmptyChart() {
   );
 }
 
-function ChartCard({ title, children, compact, href }: { title: string; children: React.ReactNode; compact?: boolean; href?: string }) {
+function ChartCard({ title, children, compact, href, className }: { title: string; children: React.ReactNode; compact?: boolean; href?: string; className?: string }) {
   const card = (
     <div className={`bg-slate-900/60 rounded-lg border border-slate-800/80 shadow flex flex-col min-h-0 overflow-hidden ${href ? 'cursor-pointer hover:border-slate-600' : ''} ${compact ? 'p-3' : 'p-6'}`}>
       <h3 className={`font-semibold text-slate-200 shrink-0 ${compact ? 'text-xs mb-2' : 'text-sm mb-5'}`}>{title}</h3>
       <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
     </div>
   );
-  if (href) return <Link href={href} className="block min-h-0 h-full">{card}</Link>;
-  return <div className="min-h-0 h-full">{card}</div>;
+  const wrap = `block min-h-0 overflow-hidden ${className ?? ''}`.trim();
+  if (href) return <Link href={href} className={wrap} style={{ height: 220 }}>{card}</Link>;
+  return <div className={wrap} style={{ height: 220 }}>{card}</div>;
 }
 
 type DashboardOverviewProps = {
@@ -64,7 +65,7 @@ export function DashboardOverview(props: DashboardOverviewProps) {
           <h1 className="text-sm font-semibold text-slate-100 truncate">FOID — Family Office Invest Dashboard</h1>
           <span className="text-xs text-slate-500 shrink-0">Última actualización: Hoy</span>
         </header>
-        <div className="flex-1 min-h-0 p-4 flex flex-col gap-3 overflow-hidden">
+        <div className="flex-1 min-h-0 p-4 flex flex-col gap-3 overflow-auto">
           <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
             <div className="bg-slate-900/60 rounded-lg p-3 border border-slate-800/80">
               <p className="text-[10px] text-slate-500 uppercase mb-0.5">Saldo Banco</p>
@@ -83,12 +84,13 @@ export function DashboardOverview(props: DashboardOverviewProps) {
               <p className="text-lg font-bold text-emerald-400">+{formatCurrencyShort(kpis.monthlyNetCashflow)} / mes</p>
             </div>
           </section>
-          <section className="grid grid-cols-2 gap-3" style={{ gridTemplateRows: '220px 220px' }}>
-            <ChartCard title="Activos" compact href="/dashboard/inversiones">
+          <section className="grid gap-3 shrink-0" style={{ gridTemplateColumns: '1fr 1fr', gridTemplateRows: '220px 220px' }}>
+            <div className="min-w-0 min-h-0 overflow-hidden relative" style={{ gridColumn: 1, gridRow: 1 }}>
+              <ChartCard title="Activos" compact href="/dashboard/inversiones">
               {charts.assetsBreakdown.length > 0 ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
                   <div className="shrink-0" style={{ height: PIE_CHART_HEIGHT }}>
-                    <HighchartsReact highcharts={Highcharts} options={assetsPieChartOptions} containerProps={{ style: { height: PIE_CHART_HEIGHT } }} />
+                    <HighchartsReact highcharts={Highcharts} options={assetsPieChartOptions} containerProps={{ style: { height: PIE_CHART_HEIGHT, width: '100%', overflow: 'hidden' } }} />
                   </div>
                   <div className="flex-1 min-h-0 overflow-y-auto pt-2 border-t border-slate-800">
                     {charts.assetsBreakdown.map((a, i) => (
@@ -104,11 +106,26 @@ export function DashboardOverview(props: DashboardOverviewProps) {
                 <EmptyChart />
               )}
             </ChartCard>
-            <ChartCard title="Pasivos" compact href="/dashboard/obligaciones">
+            </div>
+            <div className="min-w-0 min-h-0 overflow-hidden relative" style={{ gridColumn: 2, gridRow: 1 }}>
+              <ChartCard title="Flujo de Caja" compact href="/dashboard/ingresos">
+              {charts.cashflowTrend.length > 0 ? (
+                <div className="flex flex-col h-full min-h-0">
+                  <div className="shrink-0" style={{ height: CHART_HEIGHT }}>
+                    <HighchartsReact highcharts={Highcharts} options={cashflowChartOptions} containerProps={{ style: { height: CHART_HEIGHT, width: '100%', overflow: 'hidden' } }} />
+                  </div>
+                </div>
+              ) : (
+                <EmptyChart />
+              )}
+            </ChartCard>
+            </div>
+            <div className="min-w-0 min-h-0 overflow-hidden relative" style={{ gridColumn: 1, gridRow: 2 }}>
+              <ChartCard title="Pasivos" compact href="/dashboard/obligaciones">
               {charts.liabilitiesBreakdown.length > 0 ? (
                 <div className="flex flex-col h-full min-h-0 gap-2">
                   <div className="shrink-0" style={{ height: PIE_CHART_HEIGHT }}>
-                    <HighchartsReact highcharts={Highcharts} options={pieChartOptions} containerProps={{ style: { height: PIE_CHART_HEIGHT } }} />
+                    <HighchartsReact highcharts={Highcharts} options={pieChartOptions} containerProps={{ style: { height: PIE_CHART_HEIGHT, width: '100%', overflow: 'hidden' } }} />
                   </div>
                   <div className="flex-1 min-h-0 overflow-y-auto pt-2 border-t border-slate-800">
                     {charts.liabilitiesBreakdown.map((l) => (
@@ -124,22 +141,13 @@ export function DashboardOverview(props: DashboardOverviewProps) {
                 <EmptyChart />
               )}
             </ChartCard>
-            <ChartCard title="Flujo de Caja" compact href="/dashboard/ingresos">
-              {charts.cashflowTrend.length > 0 ? (
-                <div className="flex flex-col h-full min-h-0">
-                  <div className="shrink-0" style={{ height: CHART_HEIGHT }}>
-                    <HighchartsReact highcharts={Highcharts} options={cashflowChartOptions} containerProps={{ style: { height: CHART_HEIGHT } }} />
-                  </div>
-                </div>
-              ) : (
-                <EmptyChart />
-              )}
-            </ChartCard>
-            <ChartCard title="Patrimonio" compact href="/dashboard">
+            </div>
+            <div className="min-w-0 min-h-0 overflow-hidden relative" style={{ gridColumn: 2, gridRow: 2 }}>
+              <ChartCard title="Patrimonio" compact href="/dashboard">
               {(kpis.totalAssets > 0 || kpis.totalLiabilities > 0) ? (
                 <div className="flex flex-col h-full min-h-0">
                   <div className="shrink-0" style={{ height: CHART_HEIGHT }}>
-                    <HighchartsReact highcharts={Highcharts} options={patrimonioBarOptions} containerProps={{ style: { height: CHART_HEIGHT } }} />
+                    <HighchartsReact highcharts={Highcharts} options={patrimonioBarOptions} containerProps={{ style: { height: CHART_HEIGHT, width: '100%', overflow: 'hidden' } }} />
                   </div>
                   <p className="text-slate-500 text-xs pt-2">Patrimonio = {formatCurrency(kpis.netWorth)}</p>
                 </div>
@@ -147,6 +155,7 @@ export function DashboardOverview(props: DashboardOverviewProps) {
                 <EmptyChart />
               )}
             </ChartCard>
+            </div>
           </section>
         </div>
         <EconomicTicker />
