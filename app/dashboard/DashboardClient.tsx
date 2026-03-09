@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Highcharts from 'highcharts/highstock';
+import { DashboardSidebar, NavIcon } from './DashboardSidebar';
 import HighchartsReact from 'highcharts-react-official';
 
 const COLORS = ['#38bdf8', '#34d399', '#a78bfa', '#fbbf24', '#f472b6', '#2dd4bf'];
@@ -103,73 +104,6 @@ type OverviewData = {
     rentals: { id: string; propertyName: string; monthlyRent: number; status: string }[];
   };
 };
-
-const MENU_ITEMS = [
-  { id: 'overview', label: 'Overview', href: '/dashboard', icon: 'home' },
-  { id: 'import', label: 'Import', href: '/dashboard/import', icon: 'upload' },
-  { id: 'obligaciones', label: 'Obligaciones', href: '/dashboard/obligaciones', icon: 'chart' },
-  { id: 'inversiones', label: 'Inversiones', href: '/dashboard/inversiones', icon: 'list' },
-  { id: 'ingresos', label: 'Ingresos', href: '/dashboard/ingresos', icon: 'currency' },
-  { id: 'banco', label: 'Banco', href: '/dashboard/banco', icon: 'bank' },
-  { id: 'arriendos', label: 'Arriendos', href: '/dashboard/arriendos', icon: 'building' },
-  { id: 'alertas', label: 'Alertas', href: '#', icon: 'bell' },
-];
-
-function NavIcon({ icon }: { icon: string }) {
-  const size = 16;
-  switch (icon) {
-    case 'home':
-      return (
-        <svg width={size} height={size} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-        </svg>
-      );
-    case 'upload':
-      return (
-        <svg width={size} height={size} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-        </svg>
-      );
-    case 'chart':
-      return (
-        <svg width={size} height={size} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      );
-    case 'list':
-      return (
-        <svg width={size} height={size} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-        </svg>
-      );
-    case 'currency':
-      return (
-        <svg width={size} height={size} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      );
-    case 'building':
-      return (
-        <svg width={size} height={size} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-      );
-    case 'bank':
-      return (
-        <svg width={size} height={size} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-        </svg>
-      );
-    case 'bell':
-      return (
-        <svg width={size} height={size} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-6-6v0a6 6 0 00-6 6v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
-      );
-    default:
-      return null;
-  }
-}
 
 function Sparkline({ data, positive }: { data: number[]; positive?: boolean }) {
   if (!data?.length) return null;
@@ -573,23 +507,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-950">
-      <aside className="w-16 flex flex-col items-center py-3 bg-slate-900/80 border-r border-slate-800 shrink-0">
-        <h2 className="text-[10px] font-bold text-slate-400 mb-4 tracking-widest">FOID</h2>
-        <nav className="flex flex-col items-center gap-0.5">
-          {MENU_ITEMS.map((item) => (
-            <Link
-              key={item.id}
-              href={item.href}
-              className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[10px] transition-colors ${
-                item.id === 'overview' ? 'bg-sky-500/20 text-sky-400' : 'text-slate-500 hover:bg-slate-800/80 hover:text-slate-300'
-              }`}
-            >
-              <NavIcon icon={item.icon} />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      </aside>
+      <DashboardSidebar currentItemId="overview" />
 
       <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
         <header className="flex items-center justify-between px-4 py-2 bg-slate-950/95 border-b border-slate-800/80 shrink-0">
@@ -638,60 +556,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
           </section>
 
           <section className="flex-1 min-h-0 grid grid-cols-2 gap-3 overflow-hidden">
-            <ChartCard title="Flujo de Caja" compact>
-              {charts.cashflowTrend.length > 0 ? (
-                <div className="space-y-1 min-h-0 flex flex-col">
-                  <HighchartsReact highcharts={Highcharts} options={cashflowChartOptions} containerProps={{ style: { height: CHART_HEIGHT } }} />
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 pt-1 border-t border-slate-800 shrink-0">
-                    {charts.liabilitiesBreakdown.slice(0, 4).map((l) => (
-                      <div key={l.category} className="flex justify-between text-xs">
-                        <span className="text-slate-400">{l.category}</span>
-                        <span className="text-slate-200">{formatCurrencyShort(l.balance)} · Pago {formatCurrencyShort(l.monthlyPayment)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <EmptyChart />
-              )}
-            </ChartCard>
-
-            <ChartCard title="Pasivos" compact>
-              {charts.liabilitiesBreakdown.length > 0 ? (
-                <div className="flex flex-col min-h-0 gap-2">
-                  <div className="shrink-0">
-                    <HighchartsReact highcharts={Highcharts} options={pieChartOptions} containerProps={{ style: { height: PIE_CHART_HEIGHT } }} />
-                  </div>
-                  <div className="shrink-0 pt-2 border-t border-slate-800 space-y-1.5">
-                    {charts.liabilitiesBreakdown.map((l, i) => (
-                      <div key={l.category} className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between text-xs mb-0.5">
-                            <span className="text-slate-300">{l.category}</span>
-                            <span className="text-slate-100 font-medium">{formatCurrencyShort(l.balance)}</span>
-                          </div>
-                          <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${Math.min(100, (l.balance / (kpis.totalLiabilities || 1)) * 100)}%`,
-                                backgroundColor: '#f43f5e',
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    <p className="text-slate-500 text-xs mt-2 pt-2 border-t border-slate-800">Pasivos {formatCurrencyShort(kpis.totalLiabilities)}</p>
-                  </div>
-                </div>
-              ) : (
-                <EmptyChart />
-              )}
-            </ChartCard>
-
-            <ChartCard title="Activos" compact>
+            <ChartCard title="Activos" compact href="/dashboard/inversiones">
               {charts.assetsBreakdown.length > 0 ? (
                 <div className="flex flex-col min-h-0 gap-2">
                   <div className="shrink-0">
@@ -726,7 +591,60 @@ export function DashboardClient({ data }: { data: OverviewData }) {
               )}
             </ChartCard>
 
-            <ChartCard title="Patrimonio" compact>
+            <ChartCard title="Flujo de Caja" compact href="/dashboard/ingresos">
+              {charts.cashflowTrend.length > 0 ? (
+                <div className="space-y-1 min-h-0 flex flex-col">
+                  <HighchartsReact highcharts={Highcharts} options={cashflowChartOptions} containerProps={{ style: { height: CHART_HEIGHT } }} />
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 pt-1 border-t border-slate-800 shrink-0">
+                    {charts.liabilitiesBreakdown.slice(0, 4).map((l) => (
+                      <div key={l.category} className="flex justify-between text-xs">
+                        <span className="text-slate-400">{l.category}</span>
+                        <span className="text-slate-200">{formatCurrencyShort(l.balance)} · Pago {formatCurrencyShort(l.monthlyPayment)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <EmptyChart />
+              )}
+            </ChartCard>
+
+            <ChartCard title="Pasivos" compact href="/dashboard/obligaciones">
+              {charts.liabilitiesBreakdown.length > 0 ? (
+                <div className="flex flex-col min-h-0 gap-2">
+                  <div className="shrink-0">
+                    <HighchartsReact highcharts={Highcharts} options={pieChartOptions} containerProps={{ style: { height: PIE_CHART_HEIGHT } }} />
+                  </div>
+                  <div className="shrink-0 pt-2 border-t border-slate-800 space-y-1.5">
+                    {charts.liabilitiesBreakdown.map((l, i) => (
+                      <div key={l.category} className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between text-xs mb-0.5">
+                            <span className="text-slate-300">{l.category}</span>
+                            <span className="text-slate-100 font-medium">{formatCurrencyShort(l.balance)}</span>
+                          </div>
+                          <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${Math.min(100, (l.balance / (kpis.totalLiabilities || 1)) * 100)}%`,
+                                backgroundColor: '#f43f5e',
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <p className="text-slate-500 text-xs mt-2 pt-2 border-t border-slate-800">Pasivos {formatCurrencyShort(kpis.totalLiabilities)}</p>
+                  </div>
+                </div>
+              ) : (
+                <EmptyChart />
+              )}
+            </ChartCard>
+
+            <ChartCard title="Patrimonio" compact href="/dashboard">
               {(kpis.totalAssets > 0 || kpis.totalLiabilities > 0) ? (
                 <div className="space-y-1 min-h-0 flex flex-col">
                   <HighchartsReact highcharts={Highcharts} options={patrimonioBarOptions} containerProps={{ style: { height: CHART_HEIGHT } }} />
@@ -791,13 +709,17 @@ function KpiCard({
   );
 }
 
-function ChartCard({ title, children, compact }: { title: string; children: React.ReactNode; compact?: boolean }) {
-  return (
-    <div className={`bg-slate-900/60 rounded-lg border border-slate-800/80 shadow flex flex-col min-h-0 overflow-hidden ${compact ? 'p-3' : 'p-6'}`}>
+function ChartCard({ title, children, compact, href }: { title: string; children: React.ReactNode; compact?: boolean; href?: string }) {
+  const card = (
+    <div className={`bg-slate-900/60 rounded-lg border border-slate-800/80 shadow flex flex-col min-h-0 overflow-hidden transition-colors ${href ? 'cursor-pointer hover:border-slate-600 hover:bg-slate-900/80' : ''} ${compact ? 'p-3' : 'p-6'}`}>
       <h3 className={`font-semibold text-slate-200 shrink-0 ${compact ? 'text-xs mb-2' : 'text-sm mb-5'}`}>{title}</h3>
       <div className="flex-1 min-h-0 overflow-hidden">{children}</div>
     </div>
   );
+  if (href) {
+    return <Link href={href} className="block">{card}</Link>;
+  }
+  return card;
 }
 
 function EmptyChart() {

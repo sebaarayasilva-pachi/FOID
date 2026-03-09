@@ -3,17 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { importCsv, importSampleData } from './actions';
-
-const MENU_ITEMS = [
-  { id: 'overview', label: 'Overview', href: '/dashboard' },
-  { id: 'import', label: 'Import', href: '/dashboard/import' },
-  { id: 'obligaciones', label: 'Obligaciones', href: '/dashboard/obligaciones' },
-  { id: 'inversiones', label: 'Inversiones', href: '/dashboard/inversiones' },
-  { id: 'ingresos', label: 'Ingresos', href: '/dashboard/ingresos' },
-  { id: 'banco', label: 'Banco', href: '/dashboard/banco' },
-  { id: 'arriendos', label: 'Arriendos', href: '/dashboard/arriendos' },
-  { id: 'alertas', label: 'Alertas', href: '#' },
-];
+import { DashboardSidebar } from '../DashboardSidebar';
 
 const CSV_TEMPLATES = {
   investments: `name,category,capitalInvested,currentValue,returnPct,monthlyIncome
@@ -71,25 +61,8 @@ export default function ImportPage() {
   }
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-56 bg-slate-800/50 border-r border-slate-700 p-4">
-        <h2 className="text-lg font-semibold text-slate-100 mb-6">FOID</h2>
-        <nav className="space-y-1">
-          {MENU_ITEMS.map((item) => (
-            <Link
-              key={item.id}
-              href={item.href}
-              className={`block px-3 py-2 rounded-lg text-sm ${
-                item.id === 'import'
-                  ? 'bg-blue-600/30 text-blue-300'
-                  : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-200'
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      </aside>
+    <div className="flex min-h-screen bg-slate-950">
+      <DashboardSidebar currentItemId="import" />
 
       <main className="flex-1 p-8 overflow-auto">
         <h1 className="text-2xl font-bold text-slate-100 mb-2">Importar CSV</h1>

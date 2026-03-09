@@ -3,17 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { DashboardSidebar } from '../DashboardSidebar';
 import { saveOtherIncome, deleteOtherIncome } from './actions';
-
-const MENU_ITEMS = [
-  { id: 'overview', label: 'Overview', href: '/dashboard' },
-  { id: 'import', label: 'Import', href: '/dashboard/import' },
-  { id: 'obligaciones', label: 'Obligaciones', href: '/dashboard/obligaciones' },
-  { id: 'inversiones', label: 'Inversiones', href: '/dashboard/inversiones' },
-  { id: 'ingresos', label: 'Ingresos', href: '/dashboard/ingresos' },
-  { id: 'banco', label: 'Banco', href: '/dashboard/banco' },
-  { id: 'arriendos', label: 'Arriendos', href: '/dashboard/arriendos' },
-];
 
 const TYPE_OPTIONS = [
   { value: 'OTROS', label: 'Otros ingresos' },
@@ -109,22 +100,7 @@ export function IngresosClient({ incomes: initialIncomes }: { incomes: OtherInco
 
   return (
     <div className="flex min-h-screen bg-slate-950">
-      <aside className="w-56 bg-slate-900/80 border-r border-slate-800 p-4 shrink-0">
-        <h2 className="text-sm font-bold text-slate-400 mb-6 tracking-widest">FOID</h2>
-        <nav className="space-y-1">
-          {MENU_ITEMS.map((item) => (
-            <Link
-              key={item.id}
-              href={item.href}
-              className={`block px-3 py-2 rounded-lg text-sm ${
-                item.id === 'ingresos' ? 'bg-sky-500/20 text-sky-400' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      </aside>
+      <DashboardSidebar currentItemId="ingresos" />
 
       <main className="flex-1 p-8 overflow-auto">
         <div className="flex items-center justify-between mb-6">
