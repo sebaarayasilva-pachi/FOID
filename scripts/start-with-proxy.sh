@@ -1,12 +1,9 @@
 #!/bin/sh
 set -e
 
-# Inicia Cloud SQL Auth Proxy en background
-echo "Iniciando Cloud SQL Proxy..."
-cloud-sql-proxy "${CLOUD_SQL_INSTANCE}" --port=5432 &
-
-# Espera 5s para que el proxy arranque
-sleep 5
+# Cloud Run con --add-cloudsql-instances monta el socket en /cloudsql/INSTANCE
+# DATABASE_URL debe usar ?host=/cloudsql/PROJECT:REGION:INSTANCE
+# No se necesita cloud-sql-proxy
 
 # Migraciones en background (no bloquean)
 (npx prisma migrate deploy 2>/dev/null || true) &
