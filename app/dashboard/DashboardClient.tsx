@@ -638,31 +638,6 @@ export function DashboardClient({ data }: { data: OverviewData }) {
           </section>
 
           <section className="flex-1 min-h-0 grid grid-cols-2 gap-3 overflow-hidden">
-            <ChartCard title={useDailyChart ? 'Saldo diario (inversiones + banco)' : 'Variación del saldo en el tiempo'} compact>
-              {(useDailyChart && investmentSeries.length > 0) || (charts.investmentReturns.length > 0 && trendData.length > 0) ? (
-                <div className="space-y-1 min-h-0 flex flex-col">
-                  <HighchartsReact highcharts={Highcharts} constructorType="stockChart" options={investmentChartOptions} containerProps={{ style: { height: INVESTMENT_CHART_HEIGHT } }} />
-                  <div className="pt-2 border-t border-slate-800 shrink-0 space-y-1.5">
-                    {charts.investmentReturns.map((inv) => (
-                      <div key={inv.name} className="flex justify-between items-center text-xs">
-                        <span className="text-slate-300 font-medium truncate pr-2">{inv.name}</span>
-                        <span className="text-slate-100 font-semibold tabular-nums shrink-0">{formatCurrencyShort(inv.value)}</span>
-                      </div>
-                    ))}
-                    {kpis.latestBankBalance > 0 && (
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-300 font-medium truncate pr-2">Banco</span>
-                        <span className="text-slate-100 font-semibold tabular-nums shrink-0">{formatCurrencyShort(kpis.latestBankBalance)}</span>
-                      </div>
-                    )}
-                    <p className="text-slate-500 text-xs pt-1 border-t border-slate-800">Total inversiones {formatCurrency(totalInv)}{kpis.latestBankBalance > 0 ? ` · Banco ${formatCurrencyShort(kpis.latestBankBalance)}` : ''}</p>
-                  </div>
-                </div>
-              ) : (
-                <EmptyChart />
-              )}
-            </ChartCard>
-
             <ChartCard title="Flujo de Caja" compact>
               {charts.cashflowTrend.length > 0 ? (
                 <div className="space-y-1 min-h-0 flex flex-col">
@@ -681,7 +656,7 @@ export function DashboardClient({ data }: { data: OverviewData }) {
               )}
             </ChartCard>
 
-            <ChartCard title="Deuda por Categoría" compact>
+            <ChartCard title="Pasivos" compact>
               {charts.liabilitiesBreakdown.length > 0 ? (
                 <div className="flex flex-col min-h-0 gap-2">
                   <div className="shrink-0">
@@ -709,36 +684,6 @@ export function DashboardClient({ data }: { data: OverviewData }) {
                       </div>
                     ))}
                     <p className="text-slate-500 text-xs mt-2 pt-2 border-t border-slate-800">Pasivos {formatCurrencyShort(kpis.totalLiabilities)}</p>
-                  </div>
-                </div>
-              ) : (
-                <EmptyChart />
-              )}
-            </ChartCard>
-
-            <ChartCard title="Ingresos por Arriendo" compact>
-              {charts.rentals.length > 0 || charts.cashflowTrend.length > 0 ? (
-                <div className="space-y-1 min-h-0 flex flex-col">
-                  <HighchartsReact highcharts={Highcharts} options={areaChartOptions} containerProps={{ style: { height: CHART_HEIGHT } }} />
-                  <div className="pt-2 border-t border-slate-800 shrink-0 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <NavIcon icon="building" />
-                        <span className="text-slate-400 text-xs">{formatCurrencyShort(kpis.monthlyRentIncome)} / mes</span>
-                      </div>
-                    </div>
-                    {charts.rentals.filter((r) => (r.status ?? '').toUpperCase() === 'RENTED').length > 0 && (
-                      <ul className="space-y-1 text-xs">
-                        {charts.rentals
-                          .filter((r) => (r.status ?? '').toUpperCase() === 'RENTED')
-                          .map((r) => (
-                            <li key={r.id} className="flex justify-between items-center text-slate-300">
-                              <span className="truncate pr-2">{r.propertyName}</span>
-                              <span className="text-emerald-400 font-medium shrink-0">{formatCurrency(r.monthlyRent)}</span>
-                            </li>
-                          ))}
-                      </ul>
-                    )}
                   </div>
                 </div>
               ) : (
