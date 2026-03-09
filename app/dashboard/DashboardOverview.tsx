@@ -91,12 +91,20 @@ export function DashboardOverview(props: DashboardOverviewProps) {
                     <HighchartsReact highcharts={Highcharts} options={assetsPieChartOptions} containerProps={{ style: { height: '100%', width: '100%', overflow: 'hidden' } }} />
                   </div>
                   <div className="flex-[5] min-h-0 overflow-y-auto overflow-x-hidden pt-1.5 border-t border-slate-800 min-w-0">
-                    {charts.assetsBreakdown.map((a, i) => (
-                      <div key={`${a.category}-${i}`} className="flex justify-between items-center gap-2 text-xs py-0.5 min-w-0">
-                        <span className="truncate">{a.category}</span>
-                        <span className="shrink-0 tabular-nums">{formatCurrencyShort(a.value)}</span>
-                      </div>
-                    ))}
+                    {charts.assetsBreakdown.map((a, i) => {
+                      const val = Number(a.value);
+                      const pct = kpis.totalAssets > 0 ? (val / kpis.totalAssets) * 100 : 0;
+                      const color = COLORS[i % COLORS.length];
+                      return (
+                        <div key={`${a.category}-${i}`} className="flex items-center gap-2 text-xs py-0.5 min-w-0">
+                          <span className="truncate shrink-0 max-w-[35%]">{a.category}</span>
+                          <div className="flex-1 min-w-[60px] h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                            <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color }} />
+                          </div>
+                          <span className="shrink-0 tabular-nums text-right">{formatCurrencyShort(val)}</span>
+                        </div>
+                      );
+                    })}
                     <p className="text-slate-500 text-xs pt-1">Total {formatCurrencyShort(kpis.totalAssets)}</p>
                   </div>
                 </div>
@@ -126,12 +134,20 @@ export function DashboardOverview(props: DashboardOverviewProps) {
                     <HighchartsReact highcharts={Highcharts} options={pieChartOptions} containerProps={{ style: { height: '100%', width: '100%', overflow: 'hidden' } }} />
                   </div>
                   <div className="flex-[5] min-h-0 overflow-y-auto overflow-x-hidden pt-1.5 border-t border-slate-800 min-w-0">
-                    {charts.liabilitiesBreakdown.map((l, i) => (
-                      <div key={`${l.category}-${i}`} className="flex justify-between items-center gap-2 text-xs py-0.5 min-w-0">
-                        <span className="truncate">{l.category}</span>
-                        <span className="shrink-0 tabular-nums">{formatCurrencyShort(l.balance)}</span>
-                      </div>
-                    ))}
+                    {charts.liabilitiesBreakdown.map((l, i) => {
+                      const bal = Number(l.balance ?? 0);
+                      const pct = kpis.totalLiabilities > 0 ? (bal / kpis.totalLiabilities) * 100 : 0;
+                      const color = COLORS[i % COLORS.length];
+                      return (
+                        <div key={`${l.category}-${i}`} className="flex items-center gap-2 text-xs py-0.5 min-w-0">
+                          <span className="truncate shrink-0 max-w-[35%]">{l.category}</span>
+                          <div className="flex-1 min-w-[60px] h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                            <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color }} />
+                          </div>
+                          <span className="shrink-0 tabular-nums text-right">{formatCurrencyShort(bal)}</span>
+                        </div>
+                      );
+                    })}
                     <p className="text-slate-500 text-xs pt-1">Total {formatCurrencyShort(kpis.totalLiabilities)}</p>
                   </div>
                 </div>
